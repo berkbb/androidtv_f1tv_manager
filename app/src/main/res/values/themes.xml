@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.F1TVUpdater" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/f1_dark</item>
+        <item name="android:statusBarColor">@color/f1_dark</item>
+        <item name="android:navigationBarColor">@color/f1_dark</item>
+    </style>
+</resources>

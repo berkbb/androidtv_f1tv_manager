@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">F1 TV Güncelleyici</string>
+    <string name="header_title">F1 TV GÜNCELLEYİCİ</string>
+    <string name="header_subtitle">Philips 49PUS7503/62 • Şasi: TPM171E (armeabi-v7a)</string>
+    
+    <string name="btn_launch_f1">F1 TV\'yi Başlat</string>
+    <string name="btn_not_installed">F1 TV Kurulu Değil</string>
+    
+    <string name="card_installed_version">YÜKLÜ SÜRÜM</string>
+    <string name="card_latest_version">EN GÜNCEL SÜRÜM</string>
+    <string name="card_status">DURUM</string>
+    
+    <string name="status_detecting">Tespit Ediliyor...</string>
+    <string name="status_checking">Güncelleme kontrol ediliyor...</string>
+    <string name="status_not_checked">Kontrol Edilmedi</string>
+    <string name="status_not_installed">F1 TV henüz kurulu değil.</string>
+    <string name="status_update_available">Yeni sürüm mevcut!</string>
+    <string name="status_up_to_date">F1 TV güncel.</string>
+    <string name="status_check_failed">Kontrol başarısız: %1$s</string>
+    
+    <string name="status_starting_download">İndirme başlatılıyor...</string>
+    <string name="status_downloading">İndiriliyor: %%%1$d</string>
+    <string name="status_preparing">Paketler hazırlanıyor ve TV onayına gönderiliyor...</string>
+    <string name="status_confirm_prompt">Lütfen ekrandaki \'Güncelle\' onayına basın.</string>
+    <string name="status_install_failed">Kurulum başlatılamadı.</string>
+    <string name="status_download_failed">İndirme başarısız oldu.</string>
+    <string name="toast_install_success">F1 TV başarıyla güncellendi!</string>
+    <string name="toast_install_failed">Kurulum tamamlanamadı: %1$s</string>
+    <string name="status_permission_required">Yetki gerekli: Lütfen Ayarlar\'dan \'Bilinmeyen uygulamaları yükle\' iznini açın.</string>
+    <string name="status_permission_granted">Yükleme yetkisi verildi. Kuruluma hazır.</string>
+    <string name="status_installed_success">F1 TV başarıyla kuruldu / güncellendi!</string>
+    
+    <string name="btn_check_updates">Sürüm Kontrolü Yap</string>
+    <string name="btn_download_install">F1 TV\'yi İndir &amp; Kur</string>
+    <string name="btn_download_update">Güncellemeyi İndir &amp; Kur</string>
+    <string name="btn_reinstall">Yeniden Kur / Güncelle</string>
+    <string name="btn_downloading">İndiriliyor...</string>
+    <string name="btn_info">ℹ️ Bilgi</string>
+    <string name="dialog_about_title">F1 TV Güncelleyici Hakkında</string>
+    <string name="dialog_developer_label">Geliştiren:</string>
+    <string name="dialog_developer_name">berkbb</string>
+    <string name="dialog_website_label">Web Sitesi:</string>
+    <string name="dialog_website_url">https://berkbb.github.io</string>
+    <string name="dialog_patch_label">F1 TV 4K/UHD Yama:</string>
+    <string name="dialog_patch_author">Alexvbp (GitHub)</string>
+    <string name="dialog_device_label">Cihaz &amp; Platform:</string>
+    <string name="btn_close">Kapat</string>
+</resources>
