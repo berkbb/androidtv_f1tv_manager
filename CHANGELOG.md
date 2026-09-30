@@ -1,9 +1,31 @@
 # Changelog
 
-All notable changes to the **F1 TV Updater for Philips Smart TVs** project will be documented in this file.
+All notable changes to the **F1 TV Manager for Android TV & Google TV** project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.0.1] - 2026-09-30
+
+### Added & Architecture
+- **On-Device DEX Patching Engine:** Created standalone in-memory DEX bytecode patcher (`OnDevicePatcher.kt`) and local APK self-signing engine (`ApkSignerHelper.kt`), enabling direct on-device 4K/UHD unlocking independently of external release pipelines.
+- **Dynamic ABI Resolution & Extraction:** Refactored `PackageInstallerHelper.kt` with exact ABI token matching for 32-bit (`armeabi-v7a`), 64-bit (`arm64-v8a`), and x86 architectures.
+- **Automated Unit Testing Suite:** Created comprehensive test suites (`LocalizationParityTest.kt`, `DynamicArchitectureAndLocaleTest.kt`, `OnDevicePatcherTest.kt`) covering 1:1 key parity, placeholder formatting, locale fallbacks, and ABI split filtering.
+
+### Localization & Branding
+- **Rebranding to F1 TV Manager:** Updated application title across all locales (`F1 TV Manager` in EN, `F1 TV Yöneticisi` in TR, `Manager F1 TV` in RO) and migrated package namespace to `com.berkbb.f1tv.manager`.
+- **Romanian (RO) Language Support:** Added 1:1 Romanian localization (`values-ro/strings.xml`) alongside English and Turkish.
+- **English Default:** Configured English (`EN`) as the application's default startup language with instantaneous live switcher (`🌐 EN` / `🌐 TR` / `🌐 RO`).
+
+### Documentation & Compatibility
+- **Universal Android TV / Google TV Support:** Clarified full compatibility with all Android TV & Google TV devices running **Android 8.0 (API 26) or higher** (Philips, Sony, TCL, Xiaomi, Chromecast with Google TV, etc.).
+- **Unsupported Systems Matrix:** Explicitly documented unsupported platforms:
+  - Philips Saphi OS / Titan OS (Linux-based, cannot run APKs)
+  - Samsung Smart TVs (Tizen OS)
+  - LG Smart TVs (webOS)
+  - Legacy Android TV sets running Android < 8.0 (below `minSdk = 26`).
 
 ---
 

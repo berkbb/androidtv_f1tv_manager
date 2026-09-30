@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">F1 TV Güncelleyici</string>
-    <string name="header_title">F1 TV GÜNCELLEYİCİ</string>
-    <string name="header_subtitle">Philips 49PUS7503/62 • Şasi: TPM171E (armeabi-v7a)</string>
+    <string name="app_name">F1 TV Yöneticisi</string>
+    <string name="header_title">F1 TV YÖNETİCİSİ</string>
+    <string name="header_subtitle">%1$s %2$s • %3$s (%4$s)</string>
     
     <string name="btn_launch_f1">F1 TV\'yi Başlat</string>
     <string name="btn_not_installed">F1 TV Kurulu Değil</string>
@@ -36,7 +36,7 @@
     <string name="btn_reinstall">Yeniden Kur / Güncelle</string>
     <string name="btn_downloading">İndiriliyor...</string>
     <string name="btn_info">ℹ️ Bilgi</string>
-    <string name="dialog_about_title">F1 TV Güncelleyici Hakkında</string>
+    <string name="dialog_about_title">F1 TV Yöneticisi Hakkında</string>
     <string name="dialog_developer_label">Geliştiren:</string>
     <string name="dialog_developer_name">berkbb</string>
     <string name="dialog_website_label">Web Sitesi:</string>

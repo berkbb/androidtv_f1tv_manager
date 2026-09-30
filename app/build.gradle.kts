@@ -5,17 +5,23 @@ plugins {
 }
 
 android {
-    namespace = "com.babadogan.f1tv.updater"
+    namespace = "com.berkbb.f1tv.manager"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.babadogan.f1tv.updater"
+        applicationId = "com.berkbb.f1tv.manager"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            // Default debug keystore
+        }
     }
 
     buildTypes {
@@ -25,6 +31,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
+        }
+        debug {
+            applicationIdSuffix = ".debug"
+            isDebuggable = true
         }
     }
     compileOptions {
@@ -36,6 +47,13 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+
+    applicationVariants.all {
+        outputs.all {
+            val output = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            output?.outputFileName = "f1tv-manager-v${defaultConfig.versionName}-${name}.apk"
+        }
     }
 }
 
@@ -58,4 +76,7 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+
+    // Testing
+    testImplementation("junit:junit:4.13.2")
 }

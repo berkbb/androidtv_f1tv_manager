@@ -1,6 +1,6 @@
 # Development Guide
 
-This guide details the architectural decisions, project structure, developer workflows, and debugging procedures for the **F1 TV Updater for Philips Smart TVs**.
+This guide details the architectural decisions, project structure, developer workflows, and debugging procedures for the **F1 TV Manager for Android TV & Google TV (Android 8.0+)**.
 
 ---
 
@@ -13,11 +13,14 @@ The application follows Modern Android Architecture principles:
 - **System Integration:** Android `PackageInstaller` Session API via `PackageInstallerHelper`.
 
 ```
-com.babadogan.f1tv.updater/
+com.berkbb.f1tv.manager/
 ├── MainActivity.kt               # Compose UI entry point, D-Pad focus & locale provider
+├── LocaleHelper.kt               # Dynamic locale resolver & cycling helper (EN, TR, RO)
 ├── UpdaterViewModel.kt           # StateFlow UI state, GitHub API client, streaming download
 ├── PackageInstallerHelper.kt     # Multi-split APK extraction & PackageInstaller session pipeline
-└── InstallReceiver.kt            # BroadcastReceiver listening for package install status intents
+├── OnDevicePatcher.kt            # On-device DEX bytecode patcher for 4K/UHD unlocking
+├── ApkSignerHelper.kt            # Local APK JAR/Zip signer with self-signed certificate
+└── InstallResultReceiver.kt      # BroadcastReceiver listening for package install status intents
 ```
 
 ### 1. `MainActivity.kt`
@@ -94,14 +97,26 @@ adb connect [IP_ADDRESS]:5555
 adb devices
 ```
 
-### 2. Building & Deploying
+### 2. Running Automated Unit Tests
 
 ```bash
-./gradlew assembleDebug
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
+./gradlew testDebugUnitTest
 ```
 
-### 3. Remote Inspection & Headless Testing
+### 3. Building & Deploying
+
+```bash
+# Debug build
+./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/f1tv-manager-v1.0.1-debug.apk
+
+# Release build
+./gradlew assembleRelease
+adb install -r app/build/outputs/apk/release/f1tv-manager-v1.0.1-release.apk
+```
+
+### 4. Remote Inspection & Headless Testing
 
 To inspect the TV interface remotely:
 
@@ -128,3 +143,7 @@ adb shell input keyevent 66  # ENTER
    Kotlin Gradle Plugin (`2.0.21`) and Gradle `8.11` fail on JDK 25+ / 27 with `IllegalArgumentException: 27`. Always maintain Zulu JDK 21 LTS as the build runtime.
 3. **Philips Standby State:**
    Philips Android TVs enter low-power deep standby after extended inactivity, which may temporarily terminate the ADB daemon. Waking the TV via remote or sending `adb shell input keyevent 224` (`KEYCODE_WAKEUP`) restores network connectivity.
+4. **Unsupported Smart TV Platforms:**
+   - **Philips Saphi OS / Titan OS:** Linux-based; cannot run APKs.
+   - **Samsung (Tizen OS) & LG (webOS):** Proprietary operating systems; cannot run Android APKs.
+   - **Android < 8.0:** Unsupported due to `minSdk = 26` requirement.

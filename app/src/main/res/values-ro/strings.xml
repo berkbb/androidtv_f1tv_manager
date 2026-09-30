@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">Manager F1 TV</string>
+    <string name="header_title">MANAGER F1 TV</string>
+    <string name="header_subtitle">%1$s %2$s • %3$s (%4$s)</string>
+    
+    <string name="btn_launch_f1">Lansează F1 TV</string>
+    <string name="btn_not_installed">F1 TV nu este instalat</string>
+    
+    <string name="card_installed_version">VERSIUNE INSTALATĂ</string>
+    <string name="card_latest_version">ULTIMA VERSIUNE</string>
+    <string name="card_status">STARE</string>
+    
+    <string name="status_detecting">Se detectează...</string>
+    <string name="status_checking">Se verifică actualizările...</string>
+    <string name="status_not_checked">Neverificat</string>
+    <string name="status_not_installed">F1 TV nu este instalat.</string>
+    <string name="status_update_available">Versiune nouă disponibilă!</string>
+    <string name="status_up_to_date">F1 TV este la zi.</string>
+    <string name="status_check_failed">Verificarea a eșuat: %1$s</string>
+    
+    <string name="status_starting_download">Se începe descărcarea...</string>
+    <string name="status_downloading">Se descarcă: %%%1$d</string>
+    <string name="status_preparing">Se pregătesc pachetele pentru confirmarea TV...</string>
+    <string name="status_confirm_prompt">Vă rugăm să confirmați notificarea de pe televizor.</string>
+    <string name="status_install_failed">Instalarea nu a putut fi pornită.</string>
+    <string name="status_download_failed">Descărcarea a eșuat.</string>
+    <string name="toast_install_success">F1 TV a fost actualizat cu succes!</string>
+    <string name="toast_install_failed">Instalarea a eșuat: %1$s</string>
+    <string name="status_permission_required">Permisiune necesară: Vă rugăm să activați \'Instalare aplicații necunoscute\' din Setări.</string>
+    <string name="status_permission_granted">Permisiune acordată. Gata de instalare.</string>
+    <string name="status_installed_success">F1 TV a fost instalat / actualizat cu succes!</string>
+    
+    <string name="btn_check_updates">Verifică actualizări</string>
+    <string name="btn_download_install">Descarcă &amp; Instalează F1 TV</string>
+    <string name="btn_download_update">Descarcă &amp; Actualizează</string>
+    <string name="btn_reinstall">Reinstalează / Verifică</string>
+    <string name="btn_downloading">Se descarcă...</string>
+    <string name="btn_info">ℹ️ Info</string>
+    <string name="dialog_about_title">Despre Manager F1 TV</string>
+    <string name="dialog_developer_label">Dezvoltator:</string>
+    <string name="dialog_developer_name">berkbb</string>
+    <string name="dialog_website_label">Site web:</string>
+    <string name="dialog_website_url">https://berkbb.github.io</string>
+    <string name="dialog_patch_label">Patch F1 TV 4K/UHD:</string>
+    <string name="dialog_patch_author">Alexvbp (GitHub)</string>
+    <string name="dialog_device_label">Dispozitiv &amp; Platformă:</string>
+    <string name="btn_close">Închide</string>
+</resources>
