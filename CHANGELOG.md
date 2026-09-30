@@ -19,7 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Romanian (RO) Language Support:** Added 1:1 Romanian localization (`values-ro/strings.xml`) alongside English and Turkish.
 - **English Default:** Configured English (`EN`) as the application's default startup language with instantaneous live switcher (`🌐 EN` / `🌐 TR` / `🌐 RO`).
 
-### Documentation & Compatibility
+### Build & Packaging
+- **Release-Only Streamlined Packaging:** Disabled debug variant packaging to produce a single, optimized, self-signed production artifact: `f1tv-manager-v1.0.1-release.apk`.
+- **Custom Output Naming:** Configured Gradle `applicationVariants` rule to dynamically format APK filenames according to release versioning.
+
+### Legal & Documentation
+- **Trademark & Non-Affiliation Disclaimers:** Added explicit legal disclaimers to [`LICENSE`](file:///Users/berkbabadogan/Documents/GitHub/androidtv_f1tv_manager/LICENSE), [`README.md`](file:///Users/berkbabadogan/Documents/GitHub/androidtv_f1tv_manager/README.md), and the in-app `ℹ️ Info` dialog confirming independent open-source status with zero official Formula 1 affiliation.
+- **100% English Documentation Standard:** Standardized all repository `.md` files (`README.md`, `DEVELOPMENT.md`, `CHANGELOG.md`, `AGENTS.md`) exclusively in English.
 - **Universal Android TV / Google TV Support:** Clarified full compatibility with all Android TV & Google TV devices running **Android 8.0 (API 26) or higher** (Philips, Sony, TCL, Xiaomi, Chromecast with Google TV, etc.).
 - **Unsupported Systems Matrix:** Explicitly documented unsupported platforms:
   - Philips Saphi OS / Titan OS (Linux-based, cannot run APKs)
