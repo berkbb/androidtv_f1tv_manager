@@ -72,7 +72,7 @@ com.berkbb.f1tv.manager/
 
 - **macOS** (Apple Silicon arm64 or Intel)
 - **Java Development Kit:** Zulu OpenJDK 21 LTS (`/Library/Java/JavaVirtualMachines/zulu-21.jdk`)
-- **Android SDK Tools:** `adb` located at `/Users/berkbabadogan/SDK/Android/platform-tools/adb`
+- **Android SDK Tools:** `adb` (Android SDK Platform-Tools)
 - **Gradle:** 8.11.1 (via `./gradlew` wrapper)
 
 ### Gradle Configuration (`gradle.properties`)
