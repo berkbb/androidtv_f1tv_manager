@@ -51,8 +51,8 @@ object ApkSignerHelper {
             override fun checkValidity(date: Date?) {}
             override fun getVersion(): Int = 3
             override fun getSerialNumber(): BigInteger = BigInteger.valueOf(System.currentTimeMillis())
-            override fun getIssuerDN(): Principal = Principal { "CN=F1TVManager, O=BerkBB, C=TR" }
-            override fun getSubjectDN(): Principal = Principal { "CN=F1TVManager, O=BerkBB, C=TR" }
+            override fun getIssuerDN(): Principal = Principal { "CN=F1TVManager, O=OpenSource, C=US" }
+            override fun getSubjectDN(): Principal = Principal { "CN=F1TVManager, O=OpenSource, C=US" }
             override fun getNotBefore(): Date = Date(System.currentTimeMillis() - 86400000L)
             override fun getNotAfter(): Date = Date(System.currentTimeMillis() + 315360000000L)
             override fun getTBSCertificate(): ByteArray = ByteArray(0)

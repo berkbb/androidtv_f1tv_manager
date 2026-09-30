@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Custom Output Naming:** Configured Gradle `applicationVariants` rule to dynamically format APK filenames according to release versioning.
 
 ### Legal & Documentation
-- **Trademark & Non-Affiliation Disclaimers:** Added explicit legal disclaimers to [`LICENSE`](file:///Users/berkbabadogan/Documents/GitHub/androidtv_f1tv_manager/LICENSE), [`README.md`](file:///Users/berkbabadogan/Documents/GitHub/androidtv_f1tv_manager/README.md), and the in-app `ℹ️ Info` dialog confirming independent open-source status with zero official Formula 1 affiliation.
+- **Trademark & Non-Affiliation Disclaimers:** Added explicit legal disclaimers to [`LICENSE`](LICENSE), [`README.md`](README.md), and the in-app `ℹ️ Info` dialog confirming independent open-source status with zero official Formula 1 affiliation.
 - **100% English Documentation Standard:** Standardized all repository `.md` files (`README.md`, `DEVELOPMENT.md`, `CHANGELOG.md`, `AGENTS.md`) exclusively in English.
 - **Universal Android TV / Google TV Support:** Clarified full compatibility with all Android TV & Google TV devices running **Android 8.0 (API 26) or higher** (Philips, Sony, TCL, Xiaomi, Chromecast with Google TV, etc.).
 - **Unsupported Systems Matrix:** Explicitly documented unsupported platforms:
