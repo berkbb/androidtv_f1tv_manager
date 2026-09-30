@@ -15,9 +15,10 @@ All AI agents operating within this repository must adhere strictly to this cons
 - **Placeholder Parity:** All dynamic format specifiers (e.g. `%1$s`, `%1$d`, `%%%1$d`) must match in type, index, and quantity across all translation files.
 - **No Hardcoded Display Strings:** UI components must never contain hardcoded display strings; all text must be accessed through Compose `stringResource(R.string.key)` or resource IDs.
 
-### 2. Mandatory Verification & Automated Testing Rule
-- Any change affecting resources, locales, or APK installation workflows must pass the automated parity test suite (`LocalizationParityTest.kt`).
-- Before marking any release task complete, agents must execute or verify test coverage across key parity, placeholder integrity, and non-empty translations.
+### 2. Mandatory Verification & Automated Testing Invariant ("Test is a MUST")
+- **Non-Negotiable Execution Gate:** Every single modification affecting source code, string resources, architecture handling, DEX bytecode patching, or packaging **MUST** be verified by running the automated unit test suite (`./gradlew test`) before completing any task.
+- **Zero Test Failure Policy:** No task is considered complete with failing or skipped assertions in `LocalizationParityTest.kt`, `DynamicArchitectureAndLocaleTest.kt`, or `OnDevicePatcherTest.kt`.
+- **Release Verification:** Build and assembly tasks must confirm successful execution of `./gradlew assemble`.
 
 ### 3. Dynamic Hardware & Platform Rule
 - **Universal Android TV / Google TV Support:** The codebase must dynamically inspect hardware parameters (`Build.MANUFACTURER`, `Build.MODEL`, `Build.PRODUCT`, `Build.SUPPORTED_ABIS`) at runtime.
@@ -25,12 +26,17 @@ All AI agents operating within this repository must adhere strictly to this cons
 - **Supported Platforms:** All Android TV / Google TV devices on Android 8.0+ (API 26+).
 - **Unsupported Redline:** Non-Android TV operating systems (Philips Saphi OS / Titan OS, Samsung Tizen OS, LG webOS) and legacy Android TV (< 8.0) must never be targeted with incompatible APK installation workflows.
 
-### 4. Language Standard for `.agents/`
-- **Strict English Requirement:** All files within `.agents/` (`AGENTS.md`, `rules/`, `skills/`, `context/`) must be written exclusively in English.
+### 4. Language Standard for All Markdown & Governance Files
+- **Strict 100% English Requirement:** All `.md` files throughout the entire repository (`README.md`, `DEVELOPMENT.md`, `CHANGELOG.md`, `AGENTS.md`, and all `.agents/**` context, rules, and skill files) must be written exclusively in English.
+
+### 5. Strict Privacy, Sanitization & Path Hygiene Invariant
+- **Zero Absolute Local Paths:** Agents must never write or commit absolute local system paths (such as `/Users/`, `C:\Users\`, or `file:///Users/`) into any source file, Markdown documentation, or build script. All internal Markdown references must use clean relative paths.
+- **Zero Sensitive / Personal Metadata:** Programmatic self-signed certificates (e.g., in `ApkSignerHelper.kt`) must use generic open-source distinguished names (`CN=F1TVManager, O=OpenSource, C=US`) rather than personal identifiers or country designations.
+- **Zero Telemetry & Secret Leakage:** The application must strictly contain zero tracking SDKs, zero telemetry, zero analytics, and zero credentials.
 
 ---
 
 ## 🧠 Memory Structure & Navigation
-- **Domain Rules:** Consult `.agents/rules/` before modifying UI, translations, or build scripts.
-- **Procedural Skills:** Use `.agents/skills/` for translation auditing and verification routines.
+- **Domain Rules:** Consult `.agents/rules/` before modifying UI, translations, build scripts, or privacy configurations.
+- **Procedural Skills:** Use `.agents/skills/` for translation auditing, testing, and verification routines.
 - **Context & Knowledge Assets:** Consult `.agents/context/` for code graphs, domain models, and roadmaps.
