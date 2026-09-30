@@ -40,16 +40,16 @@ Furthermore, official updates are distributed as multi-part Android App Bundles 
 | **Philips TPM181E / TPM191E**            | Android TV 9 Pie               | 32-bit / 64-bit ARM    |  **Yes**   | Fully compatible                             |
 | **Philips TPM211E / TPM221E / TPM231E**  | Android TV 11 / Google TV      | 64-bit (`arm64-v8a`)   |  **Yes**   | Philips The One & OLED                       |
 | **Legacy Android TV (Android < 8.0)**    | Android TV 5.0 – 7.1.2         | Any                    |   **No**   | Minimum SDK requires Android 8.0 (API 26+)   |
-| **Philips Saphi OS / Titan OS**          | Proprietary Linux              | N/A                    |   **No**   | Linux tabanlıdır; APK çalıştıramaz           |
-| **Samsung (Tizen OS)**                   | Tizen OS                       | N/A                    |   **No**   | Android tabanlı değildir; APK çalıştıramaz   |
-| **LG (webOS)**                           | webOS                          | N/A                    |   **No**   | Android tabanlı değildir; APK çalıştıramaz   |
+| **Philips Saphi OS / Titan OS**          | Proprietary Linux              | N/A                    |   **No**   | Linux-based; cannot execute Android APKs     |
+| **Samsung (Tizen OS)**                   | Tizen OS                       | N/A                    |   **No**   | Not Android-based; cannot execute APKs       |
+| **LG (webOS)**                           | webOS                          | N/A                    |   **No**   | Not Android-based; cannot execute APKs       |
 
 > [!WARNING]
-> **Desteklenmeyen Sistemler / Unsupported Systems:**
-> - **Philips Saphi OS / Titan OS** (Linux tabanlıdır, APK çalıştıramaz)
-> - **Samsung (Tizen OS)** (Android tabanlı değildir, APK çalıştıramaz)
-> - **LG (webOS)** (Android tabanlı değildir, APK çalıştıramaz)
-> - **Eski Android TV (< 8.0)** (Minimum API 26 / Android 8.0 Oreo gereklidir)
+> **Unsupported Systems:**
+> - **Philips Saphi OS / Titan OS** (Linux-based, cannot run Android APKs)
+> - **Samsung (Tizen OS)** (Not Android-based, cannot run Android APKs)
+> - **LG (webOS)** (Not Android-based, cannot run Android APKs)
+> - **Legacy Android TV (< 8.0)** (Requires minimum API 26 / Android 8.0 Oreo)
 
 ---
 
@@ -64,61 +64,59 @@ Furthermore, official updates are distributed as multi-part Android App Bundles 
 
 ---
 
-## 🚀 Building & Compilation / Nasıl Build Edilir?
+## 🚀 Building & Compilation
 
-### 💻 Yöntem 1: Terminal Üzerinden (Command Line)
+### 💻 Method 1: Command Line Interface (CLI)
 
-Zulu OpenJDK 21 ve Android SDK yüklü olduğundan emin olun, ardından aşağıdaki komutları çalıştırın:
+Ensure Zulu OpenJDK 21 and the Android SDK are installed, then run the following commands:
 
 ```bash
-# 1. Java 21 yolunu tanımlayın (macOS)
+# 1. Set Java 21 environment path (macOS)
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
 export PATH=$JAVA_HOME/bin:$PATH
 
-# 2. Automated Unit Testleri Çalıştırın
+# 2. Run automated unit test suite
 ./gradlew testDebugUnitTest
 
-# 3. Debug APK dosyasını derleyin
+# 3. Assemble Debug APK
 ./gradlew assembleDebug
+
+# 4. Assemble Signed Release APK
+./gradlew assembleRelease
 ```
 
-> **İmzalı Release APK derlemek için:**
-> ```bash
-> ./gradlew assembleRelease
-> ```
+### 🛠️ Method 2: Android Studio
 
-### 🛠️ Yöntem 2: Android Studio Üzerinden
-
-1. Android Studio'yu açın ve proje kök dizinini (`androidtv_f1tv_manager`) açın (**Open**).
-2. Gradle senkronizasyonunun tamamlanmasını bekleyin.
-3. Üst menü çubuğundan **Build > Build Bundle(s) / APK(s) > Build APK(s)** seçeneğine tıklayın.
+1. Open Android Studio and select **Open**, targeting the repository root (`androidtv_f1tv_manager`).
+2. Wait for Gradle synchronization to finish.
+3. From the top menu bar, select **Build > Build Bundle(s) / APK(s) > Build APK(s)**.
 
 ---
 
-### 📍 Derlenen APK Konumu (Compiled APK Location)
+### 📍 Compiled APK Locations
 
-Derleme işlemi bittiğinde oluşturulan APK dosyaları şu dizindedir:
+Upon build completion, generated APK files are located at:
 - **Debug:** `app/build/outputs/apk/debug/f1tv-manager-v1.0.1-debug.apk`
 - **Release:** `app/build/outputs/apk/release/f1tv-manager-v1.0.1-release.apk`
 
 ---
 
-## ⚙️ Permissions & Developer Options / İzinler ve Geliştirici Seçenekleri
+## ⚙️ Permissions & TV Installation Guide
 
-### 📺 Günlük Kullanım (Daily Usage & Updates)
-* **Geliştirici Seçenekleri Gerekmez (No Developer Options Required):** Uygulama yüklendikten sonra F1 TV güncellemelerini indirmek ve yüklemek için TV Geliştirici Seçenekleri'nin açık olmasına gerek yoktur.
-* **Bilinmeyen Uygulama Yükleme İzni:** Sadece standart Android *"Bilinmeyen uygulamaları yükle"* (`REQUEST_INSTALL_PACKAGES`) izni istenir. Uygulama ilk açıldığında sizi otomatik olarak bu ayara yönlendirir.
+### 📺 Daily Usage & In-App Updates
+* **No Developer Options Required:** Once the manager app is installed, regular F1 TV updates do not require TV Developer Options to remain enabled.
+* **Install Unknown Apps Permission:** Only the standard Android *"Install unknown apps"* (`REQUEST_INSTALL_PACKAGES`) permission is needed. The application automatically redirects you to this system setting upon initial run.
 
-### 📦 Uygulamayı TV'ye İlk Kez Yükleme Yöntemleri (Initial Setup)
+### 📦 Initial TV Installation Methods
 
-#### 🔹 Yöntem 1: USB Bellek veya Dosya Yöneticisi (Geliştirici Modu GEREKMEZ - Kolay)
-1. `f1tv-manager-v1.0.1-release.apk` dosyasını bir USB belleğe kopyalayın veya **Send Files to TV** / **X-plore** uygulaması ile TV'ye aktarın.
-2. TV'deki dosya yöneticisinden APK'ya tıklayıp yükleyin.
+#### 🔹 Method 1: USB Flash Drive or File Manager (No Developer Mode Required - Easy)
+1. Copy `f1tv-manager-v1.0.1-release.apk` to a USB flash drive or transfer via **Send Files to TV** / **X-plore**.
+2. Open the file manager on your TV and install the APK.
 
-#### 🔹 Yöntem 2: ADB ile Ağ Üzerinden Yükleme (Geliştirici Seçenekleri Gerekir)
-1. TV Ayarları > **Cihaz Tercihleri** > **Hakkında** > **Yapı Numarası**'na (Build Number) 7 kez basarak **Geliştirici Seçenekleri**'ni açın.
-2. **Geliştirici Seçenekleri** altından **Ağ Hata Ayıklama / USB Hata Ayıklama** (Network / USB Debugging) seçeneğini etkinleştirin.
-3. Bilgisayarınızdan TV'ye bağlanıp APK'yı yükleyin:
+#### 🔹 Method 2: Network ADB Sideloading (Requires TV Developer Options)
+1. Go to TV Settings > **Device Preferences** > **About** > Click **Build Number** 7 times to enable **Developer Options**.
+2. Under **Developer Options**, enable **Network / USB Debugging**.
+3. Connect and install from your computer:
 
 ```bash
 adb connect [TV_IP_ADDRESS]:5555

@@ -25,7 +25,7 @@ com.berkbb.f1tv.manager/
 
 ### 1. `MainActivity.kt`
 
-- Implements a reactive `CompositionLocalProvider` wrapping `LocalConfiguration` and `LocalContext` created with `createConfigurationContext()`. This enables instantaneous switching between English and Turkish without restarting the process.
+- Implements a reactive `CompositionLocalProvider` wrapping `LocalConfiguration` and `LocalContext` created with `createConfigurationContext()`. This enables instantaneous switching between English, Turkish, and Romanian without restarting the process.
 - Implements `TvActionButton` with `MutableInteractionSource` and `collectIsFocusedAsState()` to render TV D-pad focus states:
   - Default Check Button: Platinum/White outline on focus (`#E0E0E0`).
   - Action / Update Button: F1 Red default with Championship Gold outline on focus (`#FFD700`).
