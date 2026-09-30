@@ -1,4 +1,4 @@
-# F1 TV Updater for Philips Android TVs
+# F1 TV Updater for Unsuported Android TVs
 
 A lightweight, dedicated Android TV companion application built with **Kotlin** and **Jetpack Compose** designed specifically for Philips / TP-Vision Smart TVs running Android TV and Google TV.
 
