@@ -76,13 +76,10 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
 export PATH=$JAVA_HOME/bin:$PATH
 
 # 2. Run automated unit test suite
-./gradlew testDebugUnitTest
+./gradlew test
 
-# 3. Assemble Debug APK
-./gradlew assembleDebug
-
-# 4. Assemble Signed Release APK
-./gradlew assembleRelease
+# 3. Assemble Release APK
+./gradlew assemble
 ```
 
 ### 🛠️ Method 2: Android Studio
@@ -93,11 +90,10 @@ export PATH=$JAVA_HOME/bin:$PATH
 
 ---
 
-### 📍 Compiled APK Locations
+### 📍 Compiled APK Location
 
-Upon build completion, generated APK files are located at:
-- **Debug:** `app/build/outputs/apk/debug/f1tv-manager-v1.0.1-debug.apk`
-- **Release:** `app/build/outputs/apk/release/f1tv-manager-v1.0.1-release.apk`
+Upon build completion, the generated release APK file is located at:
+- **Release APK:** `app/build/outputs/apk/release/f1tv-manager-v1.0.1-release.apk`
 
 ---
 

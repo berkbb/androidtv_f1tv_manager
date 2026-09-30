@@ -101,18 +101,14 @@ adb devices
 
 ```bash
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
-./gradlew testDebugUnitTest
+./gradlew test
 ```
 
 ### 3. Building & Deploying
 
 ```bash
-# Debug build
-./gradlew assembleDebug
-adb install -r app/build/outputs/apk/debug/f1tv-manager-v1.0.1-debug.apk
-
-# Release build
-./gradlew assembleRelease
+# Assemble Release APK
+./gradlew assemble
 adb install -r app/build/outputs/apk/release/f1tv-manager-v1.0.1-release.apk
 ```
 

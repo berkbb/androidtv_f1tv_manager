@@ -24,6 +24,8 @@ android {
         }
     }
 
+    testBuildType = "release"
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -33,9 +35,11 @@ android {
             )
             signingConfig = signingConfigs.getByName("debug")
         }
-        debug {
-            applicationIdSuffix = ".debug"
-            isDebuggable = true
+    }
+
+    variantFilter {
+        if (buildType.name == "debug") {
+            ignore = true
         }
     }
     compileOptions {
