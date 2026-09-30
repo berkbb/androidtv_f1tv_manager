@@ -402,6 +402,14 @@ fun F1TVUpdaterScreen(
                             )
                         }
 
+                        // Disclaimer / Legal Note
+                        Text(
+                            text = stringResource(R.string.dialog_disclaimer),
+                            fontSize = 11.sp,
+                            lineHeight = 15.sp,
+                            color = F1Gray
+                        )
+
                         Spacer(modifier = Modifier.height(4.dp))
 
                         // Close button

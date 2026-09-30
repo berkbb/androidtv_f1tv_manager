@@ -44,5 +44,6 @@
     <string name="dialog_patch_label">F1 TV 4K/UHD Yama:</string>
     <string name="dialog_patch_author">Alexvbp (GitHub)</string>
     <string name="dialog_device_label">Cihaz &amp; Platform:</string>
+    <string name="dialog_disclaimer">Resmi olmayan, bağımsız açık kaynak yardımcı araçtır. Formula One Licensing B.V. veya Formula 1 ile resmi bir bağı yoktur.</string>
     <string name="btn_close">Kapat</string>
 </resources>

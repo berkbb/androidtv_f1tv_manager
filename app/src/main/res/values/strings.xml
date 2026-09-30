@@ -44,5 +44,6 @@
     <string name="dialog_patch_label">F1 TV 4K/UHD Patch:</string>
     <string name="dialog_patch_author">Alexvbp (GitHub)</string>
     <string name="dialog_device_label">Device &amp; Platform:</string>
+    <string name="dialog_disclaimer">Unofficial, independent open-source utility. Not affiliated with or endorsed by Formula One Licensing B.V. or Formula 1.</string>
     <string name="btn_close">Close</string>
 </resources>

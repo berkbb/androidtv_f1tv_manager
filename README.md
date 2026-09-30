@@ -134,8 +134,12 @@ adb install -r app/build/outputs/apk/release/f1tv-manager-v1.0.1-release.apk
 
 ---
 
-## 📄 License
+## 📄 License & Legal Disclaimers
 
 This project is open-source software licensed under the **[MIT License](file:///Users/berkbabadogan/Documents/GitHub/androidtv_f1tv_manager/LICENSE)**.
 
-_Disclaimer: This tool is created for personal and educational use to maintain compatible access on Android TV and Google TV devices. F1 TV and Formula 1 are registered trademarks of Formula One Licensing B.V._
+### ⚖️ Trademark & Non-Affiliation Notice
+- **Formula 1, F1, FORMULA ONE, F1 TV**, and related marks, logos, and emblems are registered trademarks of **Formula One Licensing B.V.**, a Formula 1 company.
+- This project is an **independent, unofficial open-source utility** developed strictly for personal, educational, and interoperability purposes on Android TV and Google TV platforms.
+- This software is **not affiliated with, endorsed by, sponsored by, authorized by, or in any way officially connected** with Formula One Licensing B.V., Formula One Group, Liberty Media, or any of their subsidiaries or affiliates.
+- This repository does not host, distribute, or stream any copyrighted audio, video, or proprietary application binaries. All installation operations interact with user-authorized, publicly accessible packages using standard Android APIs.
