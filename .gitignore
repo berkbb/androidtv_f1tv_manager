@@ -43,3 +43,4 @@ mapping.txt
 # Android Studio profiler & captures
 captures/
 .externalNativeBuild/
+*.bak
