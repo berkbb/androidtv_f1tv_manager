@@ -10,21 +10,20 @@
     <string name="card_latest_version">LATEST VERSION</string>
     <string name="card_status">STATUS</string>
     
-    <string name="status_detecting">Detecting...</string>
-    <string name="status_checking">Checking for updates...</string>
+    <string name="status_detecting">Detecting…</string>
+    <string name="status_checking">Checking for updates…</string>
     <string name="status_not_checked">Not Checked</string>
     <string name="status_not_installed">F1 TV is not installed.</string>
     <string name="status_update_available">New version available!</string>
     <string name="status_up_to_date">F1 TV is up to date.</string>
     <string name="status_check_failed">Check failed: %1$s</string>
     
-    <string name="status_starting_download">Starting download...</string>
+    <string name="status_starting_download">Starting download…</string>
     <string name="status_downloading">Downloading: %1$d%%</string>
-    <string name="status_preparing">Preparing packages for TV confirmation...</string>
+    <string name="status_preparing">Preparing packages for TV confirmation…</string>
     <string name="status_confirm_prompt">Please confirm the update prompt on your TV.</string>
     <string name="status_install_failed">Installation could not be started.</string>
     <string name="status_download_failed">Download failed.</string>
-    <string name="toast_install_success">F1 TV successfully updated!</string>
     <string name="toast_install_failed">Installation failed: %1$s</string>
     <string name="status_permission_required">Permission required: Please allow \'Install unknown apps\' in Settings.</string>
     <string name="status_permission_granted">Permission granted. Ready to install.</string>
@@ -34,7 +33,7 @@
     <string name="btn_download_install">Download &amp; Install F1 TV</string>
     <string name="btn_download_update">Download &amp; Update</string>
     <string name="btn_reinstall">Reinstall / Verify</string>
-    <string name="btn_downloading">Downloading...</string>
+    <string name="btn_downloading">Downloading…</string>
     <string name="btn_info">ℹ️ Info</string>
     <string name="dialog_about_title">About F1 TV Manager</string>
     <string name="dialog_developer_label">Developer:</string>
@@ -45,5 +44,13 @@
     <string name="dialog_patch_author">Alexvbp (GitHub)</string>
     <string name="dialog_device_label">Device &amp; Platform:</string>
     <string name="dialog_disclaimer">Unofficial, independent open-source utility. Not affiliated with or endorsed by Formula One Licensing B.V. or Formula 1.</string>
+    <string name="btn_language">🌐 %1$s</string>
+    <string name="btn_uninstall_f1">Uninstall Current F1 TV</string>
+    <string name="status_signature_conflict">The installed F1 TV is signed with a different key. Uninstall it first, then install the patched version.</string>
+    <string name="status_no_release">No compatible release was found.</string>
+    <string name="status_no_compatible_abi">This package has no build for this device\'s processor architecture.</string>
+    <string name="btn_cancel_download">Cancel Download</string>
+    <string name="status_download_cancelled">Download cancelled.</string>
+    <string name="status_insufficient_storage">Not enough free storage: about %1$d MB is required.</string>
     <string name="btn_close">Close</string>
 </resources>

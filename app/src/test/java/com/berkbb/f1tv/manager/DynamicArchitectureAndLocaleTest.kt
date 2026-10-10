@@ -2,6 +2,7 @@ package com.berkbb.f1tv.manager
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -52,13 +53,40 @@ class DynamicArchitectureAndLocaleTest {
         val abis64 = arrayOf("arm64-v8a", "armeabi-v7a", "armeabi")
         assertEquals("arm64_v8a", PackageInstallerHelper.resolveBestAbi(abis64))
 
-        // 32-bit legacy TV (e.g. Philips TPM171E MediaTek MT5596)
+        // 32-bit legacy TV (e.g. MediaTek MT5596)
         val abis32 = arrayOf("armeabi-v7a", "armeabi")
         assertEquals("armeabi_v7a", PackageInstallerHelper.resolveBestAbi(abis32))
 
         // x86_64 Emulator
         val abisX86 = arrayOf("x86_64", "x86")
         assertEquals("x86_64", PackageInstallerHelper.resolveBestAbi(abisX86))
+    }
+
+    @Test
+    fun testResolveBestAbiUsesAbisActuallyShippedInBundle() {
+        val abis64 = arrayOf("arm64-v8a", "armeabi-v7a", "armeabi")
+
+        // 64-bit device, bundle ships both: prefer arm64
+        assertEquals("arm64_v8a", PackageInstallerHelper.resolveBestAbi(abis64, setOf("arm64_v8a", "armeabi_v7a")))
+
+        // 64-bit device, bundle ships only 32-bit split: fall back to armeabi_v7a instead of installing no native libs
+        assertEquals("armeabi_v7a", PackageInstallerHelper.resolveBestAbi(abis64, setOf("armeabi_v7a")))
+
+        // 32-bit-only device, bundle ships only arm64: no compatible split
+        assertNull(PackageInstallerHelper.resolveBestAbi(arrayOf("armeabi-v7a", "armeabi"), setOf("arm64_v8a")))
+    }
+
+    @Test
+    fun testNoAbiSplitsAreIncludedWithoutACompatibleAbi() {
+        assertTrue(PackageInstallerHelper.shouldIncludeSplit("base.apk", null))
+        assertTrue(PackageInstallerHelper.shouldIncludeSplit("config.en.apk", null))
+        assertFalse(PackageInstallerHelper.shouldIncludeSplit("config.arm64_v8a.apk", null))
+    }
+
+    @Test
+    fun testSplitNameStripsDirectories() {
+        assertEquals("base.apk", PackageInstallerHelper.splitName("splits/base.apk"))
+        assertEquals("config.arm64_v8a.apk", PackageInstallerHelper.splitName("config.arm64_v8a.apk"))
     }
 
     @Test

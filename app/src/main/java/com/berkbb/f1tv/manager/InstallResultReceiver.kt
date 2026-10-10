@@ -4,14 +4,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
-import android.widget.Toast
+import androidx.core.content.IntentCompat
 
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
 sealed interface InstallEvent {
     data object Success : InstallEvent
-    data class Failure(val message: String) : InstallEvent
+    data class Failure(val message: String, val isSignatureConflict: Boolean = false) : InstallEvent
 }
 
 object InstallEvents {
@@ -23,6 +23,10 @@ object InstallEvents {
     }
 }
 
+/**
+ * Receives PackageInstaller session callbacks. Not exported: only the app's own
+ * PendingIntent (handed to the system installer) can deliver results here.
+ */
 class InstallResultReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
@@ -30,7 +34,7 @@ class InstallResultReceiver : BroadcastReceiver() {
 
         when (status) {
             PackageInstaller.STATUS_PENDING_USER_ACTION -> {
-                val confirmIntent = intent.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)
+                val confirmIntent = IntentCompat.getParcelableExtra(intent, Intent.EXTRA_INTENT, Intent::class.java)
                 if (confirmIntent != null) {
                     confirmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(confirmIntent)
@@ -40,7 +44,10 @@ class InstallResultReceiver : BroadcastReceiver() {
                 InstallEvents.emit(InstallEvent.Success)
             }
             else -> {
-                InstallEvents.emit(InstallEvent.Failure(message ?: "Code $status"))
+                // STATUS_FAILURE_CONFLICT covers INSTALL_FAILED_UPDATE_INCOMPATIBLE (different signing key)
+                val isConflict = status == PackageInstaller.STATUS_FAILURE_CONFLICT ||
+                    message?.contains("UPDATE_INCOMPATIBLE") == true
+                InstallEvents.emit(InstallEvent.Failure(message ?: "Code $status", isConflict))
             }
         }
     }

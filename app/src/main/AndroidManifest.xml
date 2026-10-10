@@ -3,6 +3,13 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Required (targetSdk 28+) to open the system uninstall prompt for a conflicting F1 TV build -->
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+
+    <!-- Package visibility (Android 11+): needed to detect, version-check and launch F1 TV -->
+    <queries>
+        <package android:name="com.formulaone.production" />
+    </queries>
 
     <uses-feature
         android:name="android.software.leanback"
@@ -17,12 +24,10 @@
         android:banner="@drawable/ic_banner"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.F1TVUpdater">
+        android:theme="@style/Theme.F1TVManager">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:screenOrientation="landscape"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,7 +38,7 @@
 
         <receiver
             android:name=".InstallResultReceiver"
-            android:exported="true" />
+            android:exported="false" />
     </application>
 
 </manifest>

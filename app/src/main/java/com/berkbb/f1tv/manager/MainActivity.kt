@@ -4,12 +4,10 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
@@ -19,6 +17,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -26,6 +26,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.edit
 import java.util.Locale
 
 val F1Red = Color(0xFFE10600)
@@ -50,7 +53,7 @@ class MainActivity : ComponentActivity() {
 
     private fun saveLanguagePreference(lang: String) {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_SELECTED_LANGUAGE, lang).apply()
+        prefs.edit { putString(KEY_SELECTED_LANGUAGE, lang) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,54 +72,44 @@ class MainActivity : ComponentActivity() {
             val configuration = LocalConfiguration.current
             val localizedConfiguration = remember(currentLanguage, configuration) {
                 Configuration(configuration).apply {
-                    val locale = Locale(currentLanguage)
-                    setLocale(locale)
-                    Locale.setDefault(locale)
+                    setLocale(Locale.forLanguageTag(currentLanguage))
                 }
+            }
+            val localizedContext = remember(context, localizedConfiguration) {
+                context.createConfigurationContext(localizedConfiguration)
             }
 
             CompositionLocalProvider(
                 LocalConfiguration provides localizedConfiguration,
-                LocalContext provides context.createConfigurationContext(localizedConfiguration)
+                LocalContext provides localizedContext
             ) {
-                F1TVUpdaterScreen(
+                F1TVManagerScreen(
                     viewModel = viewModel,
                     currentLanguage = currentLanguage,
                     onToggleLanguage = {
                         val newLang = LocaleHelper.getNextLanguage(currentLanguage)
                         saveLanguagePreference(newLang)
-                        updateLocale(newLang)
+                        // Durum metinleri kaynak ID'si olarak tutulduğu için yeniden çizim yeterli; ağ çağrısı gerekmez
                         currentLanguage = newLang
-                        viewModel.refreshInstalledState()
-                        viewModel.checkForUpdates()
                     }
                 )
             }
         }
     }
 
-    private fun updateLocale(lang: String) {
-        val locale = Locale(lang)
-        Locale.setDefault(locale)
-        val config = resources.configuration
-        config.setLocale(locale)
-        resources.updateConfiguration(config, resources.displayMetrics)
-    }
-
     override fun onResume() {
         super.onResume()
-        viewModel.onAppResumed(this)
+        viewModel.onAppResumed()
     }
 }
 
 @Composable
-fun F1TVUpdaterScreen(
+fun F1TVManagerScreen(
     viewModel: UpdaterViewModel,
     currentLanguage: String,
     onToggleLanguage: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
     var showInfoDialog by remember { mutableStateOf(false) }
 
     Box(
@@ -179,7 +172,7 @@ fun F1TVUpdaterScreen(
 
                     // Dil Butonu (EN / TR / RO)
                     TvActionButton(
-                        text = "🌐 ${currentLanguage.uppercase()}",
+                        text = stringResource(R.string.btn_language, currentLanguage.uppercase(Locale.ROOT)),
                         backgroundColor = F1DarkCard,
                         focusedBorderColor = Color(0xFF00ADB5),
                         onClick = onToggleLanguage
@@ -191,7 +184,7 @@ fun F1TVUpdaterScreen(
                         backgroundColor = F1DarkCard,
                         focusedBorderColor = F1White,
                         enabled = uiState.isInstalled,
-                        onClick = { viewModel.launchF1TV(context) }
+                        onClick = { viewModel.launchF1TV() }
                     )
                 }
             }
@@ -215,6 +208,7 @@ fun F1TVUpdaterScreen(
                 )
 
                 val statusColor = when {
+                    uiState.isSignatureConflict -> F1Red
                     !uiState.isInstalled -> Color(0xFFFF9800)
                     uiState.isUpdateAvailable -> F1Red
                     else -> Color(0xFF4CAF50)
@@ -222,15 +216,9 @@ fun F1TVUpdaterScreen(
 
                 val statusText = when {
                     uiState.isLoading -> stringResource(R.string.status_checking)
-                    uiState.statusArg.isNotEmpty() -> {
-                        val intArg = uiState.statusArg.toIntOrNull()
-                        if (intArg != null) {
-                            stringResource(uiState.statusResId, intArg)
-                        } else {
-                            stringResource(uiState.statusResId, uiState.statusArg)
-                        }
-                    }
-                    else -> stringResource(uiState.statusResId)
+                    // statusArg tipi (Int / String) ilgili metnin %1$d / %1$s biçimiyle eşleşir
+                    else -> uiState.statusArg?.let { arg -> stringResource(uiState.statusResId, arg) }
+                        ?: stringResource(uiState.statusResId)
                 }
 
                 InfoCard(
@@ -264,6 +252,11 @@ fun F1TVUpdaterScreen(
             }
 
             // Bottom Actions
+            val cancelFocusRequester = remember { FocusRequester() }
+            LaunchedEffect(uiState.isDownloading) {
+                // İndirme başlayınca ana buton devre dışı kalır; odağı İptal butonuna taşı
+                if (uiState.isDownloading) runCatching { cancelFocusRequester.requestFocus() }
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(20.dp),
@@ -278,7 +271,15 @@ fun F1TVUpdaterScreen(
                     onClick = { viewModel.checkForUpdates() }
                 )
 
-                if (!uiState.isInstalled || uiState.isUpdateAvailable || uiState.downloadUrl.isNotEmpty()) {
+                if (uiState.isSignatureConflict && uiState.isInstalled) {
+                    // Farklı imza anahtarıyla kurulu F1 TV önce kaldırılmalı
+                    TvActionButton(
+                        text = stringResource(R.string.btn_uninstall_f1),
+                        backgroundColor = F1Red,
+                        focusedBorderColor = Color(0xFFFFD700),
+                        onClick = { viewModel.uninstallF1TV() }
+                    )
+                } else if (!uiState.isInstalled || uiState.isUpdateAvailable || uiState.downloadUrl.isNotEmpty()) {
                     val buttonText = when {
                         uiState.isDownloading -> stringResource(R.string.btn_downloading)
                         !uiState.isInstalled -> stringResource(R.string.btn_download_install)
@@ -292,20 +293,32 @@ fun F1TVUpdaterScreen(
                         focusedBorderColor = Color(0xFFFFD700),
                         enabled = !uiState.isDownloading && uiState.downloadUrl.isNotEmpty(),
                         isLoading = uiState.isDownloading,
-                        onClick = { viewModel.downloadAndInstall(context) }
+                        onClick = { viewModel.downloadAndInstall() }
                     )
+
+                    if (uiState.isDownloading) {
+                        TvActionButton(
+                            text = stringResource(R.string.btn_cancel_download),
+                            backgroundColor = F1DarkCard,
+                            focusedBorderColor = Color(0xFFE0E0E0),
+                            modifier = Modifier.focusRequester(cancelFocusRequester),
+                            onClick = { viewModel.cancelDownload() }
+                        )
+                    }
                 }
             }
         }
 
         if (showInfoDialog) {
-            BackHandler { showInfoDialog = false }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.75f)),
-                contentAlignment = Alignment.Center
+            // Ayrı pencere: D-pad odağı diyalog içinde kalır, arkadaki butonlara geçemez; Geri tuşu kapatır
+            val closeFocusRequester = remember { FocusRequester() }
+            Dialog(
+                onDismissRequest = { showInfoDialog = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
             ) {
+                LaunchedEffect(Unit) {
+                    runCatching { closeFocusRequester.requestFocus() }
+                }
                 Card(
                     modifier = Modifier
                         .width(540.dp)
@@ -421,6 +434,7 @@ fun F1TVUpdaterScreen(
                                 text = stringResource(R.string.btn_close),
                                 backgroundColor = F1Red,
                                 focusedBorderColor = Color(0xFFFFD700),
+                                modifier = Modifier.focusRequester(closeFocusRequester),
                                 onClick = { showInfoDialog = false }
                             )
                         }
@@ -485,10 +499,12 @@ fun TvActionButton(
     text: String,
     backgroundColor: Color,
     focusedBorderColor: Color,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isLoading: Boolean = false,
     onClick: () -> Unit
 ) {
+    // Button zaten odaklanabilir; ek .focusable() ikinci bir odak durağı yaratıyordu
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
@@ -503,9 +519,8 @@ fun TvActionButton(
             disabledContainerColor = backgroundColor.copy(alpha = 0.6f),
             disabledContentColor = F1White.copy(alpha = 0.6f)
         ),
-        modifier = Modifier
+        modifier = modifier
             .height(52.dp)
-            .focusable(interactionSource = interactionSource)
             .then(
                 if (isFocused) Modifier.border(3.dp, focusedBorderColor, RoundedCornerShape(8.dp))
                 else Modifier

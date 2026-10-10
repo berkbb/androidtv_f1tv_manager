@@ -10,21 +10,20 @@
     <string name="card_latest_version">ULTIMA VERSIUNE</string>
     <string name="card_status">STARE</string>
     
-    <string name="status_detecting">Se detectează...</string>
-    <string name="status_checking">Se verifică actualizările...</string>
+    <string name="status_detecting">Se detectează…</string>
+    <string name="status_checking">Se verifică actualizările…</string>
     <string name="status_not_checked">Neverificat</string>
     <string name="status_not_installed">F1 TV nu este instalat.</string>
     <string name="status_update_available">Versiune nouă disponibilă!</string>
     <string name="status_up_to_date">F1 TV este la zi.</string>
     <string name="status_check_failed">Verificarea a eșuat: %1$s</string>
     
-    <string name="status_starting_download">Se începe descărcarea...</string>
+    <string name="status_starting_download">Se începe descărcarea…</string>
     <string name="status_downloading">Se descarcă: %%%1$d</string>
-    <string name="status_preparing">Se pregătesc pachetele pentru confirmarea TV...</string>
+    <string name="status_preparing">Se pregătesc pachetele pentru confirmarea TV…</string>
     <string name="status_confirm_prompt">Vă rugăm să confirmați notificarea de pe televizor.</string>
     <string name="status_install_failed">Instalarea nu a putut fi pornită.</string>
     <string name="status_download_failed">Descărcarea a eșuat.</string>
-    <string name="toast_install_success">F1 TV a fost actualizat cu succes!</string>
     <string name="toast_install_failed">Instalarea a eșuat: %1$s</string>
     <string name="status_permission_required">Permisiune necesară: Vă rugăm să activați \'Instalare aplicații necunoscute\' din Setări.</string>
     <string name="status_permission_granted">Permisiune acordată. Gata de instalare.</string>
@@ -34,7 +33,7 @@
     <string name="btn_download_install">Descarcă &amp; Instalează F1 TV</string>
     <string name="btn_download_update">Descarcă &amp; Actualizează</string>
     <string name="btn_reinstall">Reinstalează / Verifică</string>
-    <string name="btn_downloading">Se descarcă...</string>
+    <string name="btn_downloading">Se descarcă…</string>
     <string name="btn_info">ℹ️ Info</string>
     <string name="dialog_about_title">Despre Manager F1 TV</string>
     <string name="dialog_developer_label">Dezvoltator:</string>
@@ -45,5 +44,13 @@
     <string name="dialog_patch_author">Alexvbp (GitHub)</string>
     <string name="dialog_device_label">Dispozitiv &amp; Platformă:</string>
     <string name="dialog_disclaimer">Utilitar open-source neoficial și independent. Nu este afiliat sau aprobat de Formula One Licensing B.V. sau Formula 1.</string>
+    <string name="btn_language">🌐 %1$s</string>
+    <string name="btn_uninstall_f1">Dezinstalează F1 TV actual</string>
+    <string name="status_signature_conflict">F1 TV instalat este semnat cu o altă cheie. Dezinstalați-l mai întâi, apoi instalați versiunea modificată.</string>
+    <string name="status_no_release">Nu a fost găsită nicio versiune compatibilă.</string>
+    <string name="status_no_compatible_abi">Acest pachet nu conține o versiune pentru arhitectura procesorului acestui dispozitiv.</string>
+    <string name="btn_cancel_download">Anulează descărcarea</string>
+    <string name="status_download_cancelled">Descărcarea a fost anulată.</string>
+    <string name="status_insufficient_storage">Spațiu de stocare insuficient: sunt necesari aproximativ %1$d MB.</string>
     <string name="btn_close">Închide</string>
 </resources>

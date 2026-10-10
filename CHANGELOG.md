@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.2] - 2026-10-10
+
+### Fixed
+- **Stale Download Cache:** The cache reused any `.apkm` larger than 20 MB, so new releases (~48 MB) installed the previously cached package. Bundles are now cached per release tag, downloaded to a `.part` file, and verified against GitHub's published SHA-256 digest (exact size fallback) before use; old bundles are pruned.
+- **Package Visibility (Android 11+):** Added a `<queries>` declaration for `com.formulaone.production`; F1 TV installed via Play Store or ADB was previously reported as "not installed".
+- **Version Comparison:** Replaced substring matching (`"3.0.10".contains("3.0.1")`) with numeric segment comparison; release selection now skips drafts, pre-releases, and device-specific variant tags.
+- **ABI Selection:** The installer picks the best device ABI that the bundle actually contains and reports an incompatibility instead of installing a bundle without native libraries.
+- **Signing-Key Conflicts:** `INSTALL_FAILED_UPDATE_INCOMPATIBLE` is detected and the UI offers an *Uninstall Current F1 TV* action (`REQUEST_DELETE_PACKAGES`).
+- **D-Pad Focus:** Removed the duplicate focus target on every button; the About dialog is now a real `Dialog` window that traps focus.
+- **Robustness:** HTTP status checks, connection cleanup, `ZipFile` closing on errors, partial-download cleanup, duplicate-install guard, throttled and atomic progress updates, application context in the ViewModel, and no network call on language switch.
+
+### Security
+- **Exported Receiver / Intent Redirection:** `InstallResultReceiver` is no longer exported, so other apps cannot inject fake install results or arbitrary intents to launch.
+
+### Removed
+- **On-Device Patcher & Signer:** Removed `OnDevicePatcher.kt`, `ApkSignerHelper.kt`, and `OnDevicePatcherTest.kt`. The patcher wrote DEX files back unchanged, the signer produced unsigned APKs, the extractor was vulnerable to Zip Slip, and neither was reachable from the app.
+- Unused `androidx.tv:tv-foundation` alpha dependency, unused resources, and inactive ProGuard keep rules.
+
+### Added
+- **Storage Pre-Check:** Downloads start only when enough free space exists for the bundle, the installer's staging copy, and a safety margin; otherwise the required size is shown.
+- **Cancel Download:** A *Cancel Download* button (auto-focused for the remote) aborts the transfer and removes the partial file.
+
+### Build & Repository
+- Enabled R8 code and resource shrinking for release builds (APK ~10.7 MB → ~0.9 MB); removed unused `material-icons-extended` and `ui-tooling-preview`.
+- Migrated to AGP 9.4.1 with built-in Kotlin (KGP 2.2.10), Gradle 9.7.1, and compileSdk 37.2 (Android 17); targetSdk raised to 35. The `org.jetbrains.kotlin.android` plugin and `kotlinOptions` were replaced by built-in Kotlin and `kotlin.compilerOptions`; APK naming moved from `applicationVariants` to `base.archivesName`.
+- Dependencies: Compose BOM 2026.09.00, core-ktx 1.19.1, lifecycle 2.11.0, activity-compose 1.13.0, coroutines 1.11.0.
+- Removed the fixed landscape orientation (ignored on large screens from Android 16; TVs are landscape already).
+- Release signing via git-ignored `keystore.properties` or `F1TV_*` environment variables (debug-key fallback with warning).
+- Stopped tracking `local.properties`; removed the machine-specific `org.gradle.java.home` from `gradle.properties`.
+- Renamed the Gradle root project to `F1TVManager`; `BuildConfig.VERSION_NAME` is used for the HTTP User-Agent.
+- Replaced the legacy `variantFilter` with `androidComponents.beforeVariants`.
+- New unit tests: `ReleaseResolverTest`, `ApkmCacheTest`, `ManifestConfigurationTest`, and bundle-aware ABI cases.
+
+---
+
 ## [1.0.1] - 2026-09-30
 
 ### Added & Architecture

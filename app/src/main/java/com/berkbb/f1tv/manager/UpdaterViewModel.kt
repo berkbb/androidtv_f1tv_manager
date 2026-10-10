@@ -1,23 +1,28 @@
 package com.berkbb.f1tv.manager
 
 import android.app.Application
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
+import android.os.storage.StorageManager
 import android.provider.Settings
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
+import org.json.JSONArray
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -29,15 +34,23 @@ data class UpdaterUiState(
     val isUpdateAvailable: Boolean = false,
     val isLoading: Boolean = false,
     val isDownloading: Boolean = false,
+    val isSignatureConflict: Boolean = false,
     val downloadProgress: Int = 0,
     val statusResId: Int = R.string.status_detecting,
-    val statusArg: String = ""
+    // Format argument for statusResId: Int for %1$d strings, String for %1$s strings, null if none
+    val statusArg: Any? = null
 )
 
 class UpdaterViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(UpdaterUiState())
     val uiState: StateFlow<UpdaterUiState> = _uiState.asStateFlow()
+
+    private var latestRelease: ReleaseInfo? = null
+    private var installJob: Job? = null
+    @Volatile private var activeConnection: HttpURLConnection? = null
+
+    private val app: Application get() = getApplication()
 
     init {
         refreshInstalledState()
@@ -50,27 +63,34 @@ class UpdaterViewModel(application: Application) : AndroidViewModel(application)
             InstallEvents.events.collect { event ->
                 when (event) {
                     is InstallEvent.Success -> {
+                        _uiState.update { it.copy(isSignatureConflict = false) }
                         refreshInstalledState(preferredStatus = R.string.status_installed_success)
                     }
                     is InstallEvent.Failure -> {
-                        _uiState.value = _uiState.value.copy(
-                            isDownloading = false,
-                            statusResId = R.string.toast_install_failed,
-                            statusArg = event.message
-                        )
+                        _uiState.update {
+                            if (event.isSignatureConflict) {
+                                it.copy(
+                                    isDownloading = false,
+                                    isSignatureConflict = true,
+                                    statusResId = R.string.status_signature_conflict,
+                                    statusArg = null
+                                )
+                            } else {
+                                it.copy(
+                                    isDownloading = false,
+                                    statusResId = R.string.toast_install_failed,
+                                    statusArg = event.message
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
-    fun onAppResumed(context: Context) {
-        val canInstall = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.packageManager.canRequestPackageInstalls()
-        } else {
-            true
-        }
-
+    fun onAppResumed() {
+        val canInstall = app.packageManager.canRequestPackageInstalls()
         val preferred = if (canInstall && _uiState.value.statusResId == R.string.status_permission_required) {
             R.string.status_permission_granted
         } else null
@@ -78,226 +98,308 @@ class UpdaterViewModel(application: Application) : AndroidViewModel(application)
         refreshInstalledState(preferredStatus = preferred)
     }
 
-    fun refreshInstalledState(preferredStatus: Int? = null) {
-        val pm = getApplication<Application>().packageManager
-        val (version, installed) = try {
-            val pInfo = pm.getPackageInfo("com.formulaone.production", 0)
-            Pair(pInfo.versionName ?: "N/A", true)
+    private fun installedF1TvVersion(): String? {
+        return try {
+            app.packageManager.getPackageInfo(F1TV_PACKAGE_NAME, 0).versionName ?: "N/A"
         } catch (e: PackageManager.NameNotFoundException) {
-            Pair("", false)
+            null
         }
+    }
 
-        val latest = _uiState.value.latestVersion.replace("v", "").trim()
-        val isAlreadyInstalled = latest.isNotEmpty() && version.contains(latest)
-        val isNewer = latest.isNotEmpty() && !isAlreadyInstalled && installed
-        val needsInstall = !installed
+    private fun statusResFor(status: UpdateStatus): Int = when (status) {
+        UpdateStatus.NOT_INSTALLED -> R.string.status_not_installed
+        UpdateStatus.UPDATE_AVAILABLE -> R.string.status_update_available
+        UpdateStatus.UP_TO_DATE -> R.string.status_up_to_date
+    }
 
-        val statusRes = when {
-            preferredStatus != null -> preferredStatus
-            needsInstall -> R.string.status_not_installed
-            isNewer -> R.string.status_update_available
-            installed -> R.string.status_up_to_date
-            else -> R.string.status_detecting
+    fun refreshInstalledState(preferredStatus: Int? = null) {
+        val version = installedF1TvVersion()
+        val installed = version != null
+        val status = ReleaseResolver.evaluate(version, installed, latestRelease?.tag)
+        // Kurulum/indirme sürerken (ör. onay ekranından dönüşte) ilerleme mesajını ezme
+        val keepStatus = preferredStatus == null && installJob?.isActive == true
+
+        _uiState.update {
+            val conflict = it.isSignatureConflict && installed
+            it.copy(
+                installedVersion = version.orEmpty(),
+                isInstalled = installed,
+                isUpdateAvailable = status != UpdateStatus.UP_TO_DATE,
+                isSignatureConflict = conflict,
+                statusResId = when {
+                    keepStatus -> it.statusResId
+                    preferredStatus != null -> preferredStatus
+                    conflict -> R.string.status_signature_conflict
+                    else -> statusResFor(status)
+                },
+                statusArg = if (keepStatus) it.statusArg else null
+            )
         }
-
-        _uiState.value = _uiState.value.copy(
-            installedVersion = version,
-            isInstalled = installed,
-            isUpdateAvailable = isNewer || needsInstall,
-            isDownloading = false,
-            statusResId = statusRes,
-            statusArg = ""
-        )
     }
 
     fun checkForUpdates() {
+        if (_uiState.value.isLoading) return
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
-                isLoading = true,
-                statusResId = R.string.status_checking,
-                statusArg = ""
-            )
+            _uiState.update {
+                it.copy(isLoading = true, statusResId = R.string.status_checking, statusArg = null)
+            }
             try {
-                val (tag, url) = fetchLatestRelease()
-                val cleanTag = tag.replace("v", "").trim()
-                val isInstalled = _uiState.value.isInstalled
-                val isAlreadyInstalled = _uiState.value.installedVersion.contains(cleanTag)
-                val isNewer = cleanTag.isNotEmpty() && !isAlreadyInstalled && isInstalled
-                val needsInstall = !isInstalled
-
-                val statusRes = when {
-                    needsInstall -> R.string.status_not_installed
-                    isNewer -> R.string.status_update_available
-                    else -> R.string.status_up_to_date
+                val release = fetchLatestRelease()
+                latestRelease = release
+                _uiState.update {
+                    it.copy(
+                        latestVersion = release?.tag.orEmpty(),
+                        downloadUrl = release?.downloadUrl.orEmpty(),
+                        isLoading = false
+                    )
                 }
-
-                _uiState.value = _uiState.value.copy(
-                    latestVersion = tag,
-                    downloadUrl = url,
-                    isUpdateAvailable = isNewer || needsInstall,
-                    isLoading = false,
-                    statusResId = statusRes,
-                    statusArg = ""
-                )
+                if (release == null) {
+                    _uiState.update { it.copy(statusResId = R.string.status_no_release, statusArg = null) }
+                } else {
+                    refreshInstalledState()
+                }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    statusResId = R.string.status_check_failed,
-                    statusArg = e.localizedMessage ?: ""
-                )
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        statusResId = R.string.status_check_failed,
+                        statusArg = e.localizedMessage ?: e.javaClass.simpleName
+                    )
+                }
             }
         }
     }
 
-    private suspend fun fetchLatestRelease(): Pair<String, String> = withContext(Dispatchers.IO) {
-        val apiUrl = "https://api.github.com/repos/Alexvbp/f1tv-4k-patch/releases/latest"
-        val connection = (URL(apiUrl).openConnection() as HttpURLConnection).apply {
+    private suspend fun fetchLatestRelease(): ReleaseInfo? = withContext(Dispatchers.IO) {
+        val connection = (URL(UPSTREAM_RELEASES_URL).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
-            setRequestProperty("User-Agent", "F1TV-AndroidTV-Manager/1.0.1")
+            setRequestProperty("User-Agent", "F1TV-AndroidTV-Manager/${BuildConfig.VERSION_NAME}")
+            setRequestProperty("Accept", "application/vnd.github+json")
             connectTimeout = 10000
             readTimeout = 10000
         }
-
-        val jsonStr = connection.inputStream.bufferedReader().use { it.readText() }
-        val root = JSONObject(jsonStr)
-        val tagName = root.optString("tag_name", "")
-
-        val assets = root.optJSONArray("assets")
-        var downloadUrl = ""
-        if (assets != null) {
-            for (i in 0 until assets.length()) {
-                val asset = assets.getJSONObject(i)
-                val name = asset.optString("name", "")
-                if (name.endsWith(".apkm")) {
-                    downloadUrl = asset.optString("browser_download_url", "")
-                    break
-                }
-            }
+        try {
+            val code = connection.responseCode
+            if (code != HttpURLConnection.HTTP_OK) throw IOException("HTTP $code")
+            val jsonStr = connection.inputStream.bufferedReader().use { it.readText() }
+            ReleaseResolver.selectLatestStable(parseReleases(JSONArray(jsonStr)))
+        } finally {
+            connection.disconnect()
         }
-        Pair(tagName, downloadUrl)
     }
 
-    fun downloadAndInstall(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (!context.packageManager.canRequestPackageInstalls()) {
-                _uiState.value = _uiState.value.copy(
-                    statusResId = R.string.status_permission_required,
-                    statusArg = ""
+    private fun parseReleases(array: JSONArray): List<RawRelease> {
+        return (0 until array.length()).map { i ->
+            val release = array.getJSONObject(i)
+            val assetsJson = release.optJSONArray("assets") ?: JSONArray()
+            val assets = (0 until assetsJson.length()).map { j ->
+                val asset = assetsJson.getJSONObject(j)
+                ReleaseAsset(
+                    name = asset.optString("name", ""),
+                    downloadUrl = asset.optString("browser_download_url", ""),
+                    size = asset.optLong("size", 0L),
+                    digest = if (asset.isNull("digest")) null else asset.optString("digest", "")
                 )
+            }
+            RawRelease(
+                tagName = release.optString("tag_name", ""),
+                isDraft = release.optBoolean("draft", false),
+                isPrerelease = release.optBoolean("prerelease", false),
+                assets = assets
+            )
+        }
+    }
+
+    fun downloadAndInstall() {
+        if (!app.packageManager.canRequestPackageInstalls()) {
+            _uiState.update { it.copy(statusResId = R.string.status_permission_required, statusArg = null) }
+            try {
+                val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                    data = "package:${app.packageName}".toUri()
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                app.startActivity(intent)
+            } catch (e: Exception) {
                 try {
-                    val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
-                        data = Uri.parse("package:${context.packageName}")
+                    val fallback = Intent(Settings.ACTION_SECURITY_SETTINGS).apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
-                    context.startActivity(intent)
-                } catch (e: Exception) {
-                    try {
-                        val fallback = Intent(Settings.ACTION_SECURITY_SETTINGS).apply {
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
-                        context.startActivity(fallback)
-                    } catch (_: Exception) {}
-                }
-                return
+                    app.startActivity(fallback)
+                } catch (_: Exception) {}
             }
+            return
         }
 
-        val url = _uiState.value.downloadUrl
-        if (url.isEmpty()) return
+        val release = latestRelease ?: return
+        if (installJob?.isActive == true) return
 
-        val apkmFile = File(context.cacheDir, "f1tv_update.apkm")
+        installJob = viewModelScope.launch {
+            val target = ApkmCache.fileFor(app.cacheDir, release)
+            val cached = withContext(Dispatchers.IO) {
+                ApkmCache.pruneExcept(app.cacheDir, target)
+                ApkmCache.isValid(target, release).also { valid -> if (!valid) target.delete() }
+            }
 
-        viewModelScope.launch {
-            val needsDownload = !apkmFile.exists() || apkmFile.length() < 20_000_000L
+            val required = ApkmCache.requiredFreeBytes(release.size, cached)
+            val available = withContext(Dispatchers.IO) { availableBytes(app.cacheDir) }
+            if (available < required) {
+                _uiState.update {
+                    it.copy(
+                        statusResId = R.string.status_insufficient_storage,
+                        statusArg = ApkmCache.toMegabytesCeil(required)
+                    )
+                }
+                return@launch
+            }
 
-            var success = true
-            if (needsDownload) {
-                _uiState.value = _uiState.value.copy(
-                    isDownloading = true,
-                    downloadProgress = 0,
-                    statusResId = R.string.status_starting_download,
-                    statusArg = ""
-                )
+            if (!cached) {
+                _uiState.update {
+                    it.copy(
+                        isDownloading = true,
+                        downloadProgress = 0,
+                        statusResId = R.string.status_starting_download,
+                        statusArg = null
+                    )
+                }
+                val downloaded = withContext(Dispatchers.IO) { download(release, target) }
+                if (!downloaded) {
+                    _uiState.update {
+                        it.copy(isDownloading = false, statusResId = R.string.status_download_failed, statusArg = null)
+                    }
+                    return@launch
+                }
+            }
 
-                success = withContext(Dispatchers.IO) {
-                    try {
-                        val conn = (URL(url).openConnection() as HttpURLConnection).apply {
-                            requestMethod = "GET"
-                            instanceFollowRedirects = true
-                            connectTimeout = 15000
-                            readTimeout = 30000
-                        }
+            _uiState.update {
+                it.copy(isDownloading = false, statusResId = R.string.status_preparing, statusArg = null)
+            }
+            val result = withContext(Dispatchers.IO) {
+                PackageInstallerHelper.installApkm(app, target)
+            }
+            val statusRes = when (result) {
+                InstallStartResult.STARTED -> R.string.status_confirm_prompt
+                InstallStartResult.NO_COMPATIBLE_ABI -> R.string.status_no_compatible_abi
+                InstallStartResult.FAILED -> R.string.status_install_failed
+            }
+            _uiState.update { it.copy(statusResId = statusRes, statusArg = null) }
+        }.also { job ->
+            job.invokeOnCompletion { cause ->
+                if (cause is CancellationException) {
+                    _uiState.update {
+                        it.copy(
+                            isDownloading = false,
+                            downloadProgress = 0,
+                            statusResId = R.string.status_download_cancelled,
+                            statusArg = null
+                        )
+                    }
+                }
+            }
+        }
+    }
 
-                        val totalLength = conn.contentLength
-                        var downloaded = 0L
+    /** Cancels an in-progress download; the partial file is removed by [download]'s cleanup. */
+    fun cancelDownload() {
+        if (!_uiState.value.isDownloading) return
+        installJob?.cancel()
+        // Engelleyen read() çağrısını hemen sonlandırmak için bağlantıyı kapat
+        activeConnection?.let { connection ->
+            viewModelScope.launch(Dispatchers.IO) { connection.disconnect() }
+        }
+    }
 
-                        conn.inputStream.use { input ->
-                            FileOutputStream(apkmFile).use { output ->
-                                val buffer = ByteArray(8192)
-                                var read: Int
-                                while (input.read(buffer).also { read = it } != -1) {
-                                    output.write(buffer, 0, read)
-                                    downloaded += read
-                                    if (totalLength > 0) {
-                                        val progress = ((downloaded * 100) / totalLength).toInt()
-                                        _uiState.value = _uiState.value.copy(
-                                            downloadProgress = progress,
-                                            statusResId = R.string.status_downloading,
-                                            statusArg = progress.toString()
-                                        )
-                                    }
+    /** Space the system can provide (including clearable cache), falling back to raw usable space. */
+    private fun availableBytes(dir: File): Long {
+        return try {
+            val storageManager = app.getSystemService(StorageManager::class.java)
+            storageManager.getAllocatableBytes(storageManager.getUuidForPath(dir))
+        } catch (e: Exception) {
+            dir.usableSpace
+        }
+    }
+
+    /** Downloads into a .part file, verifies it against the release digest/size and only then publishes it. */
+    private suspend fun download(release: ReleaseInfo, target: File): Boolean {
+        val part = ApkmCache.partialFileFor(target)
+        var conn: HttpURLConnection? = null
+        try {
+            conn = (URL(release.downloadUrl).openConnection() as HttpURLConnection).also { activeConnection = it }.apply {
+                requestMethod = "GET"
+                instanceFollowRedirects = true
+                setRequestProperty("User-Agent", "F1TV-AndroidTV-Manager/${BuildConfig.VERSION_NAME}")
+                connectTimeout = 15000
+                readTimeout = 30000
+            }
+            if (conn.responseCode != HttpURLConnection.HTTP_OK) return false
+
+            val totalLength = conn.contentLengthLong.takeIf { it > 0 } ?: release.size
+            var downloaded = 0L
+            var lastProgress = -1
+
+            conn.inputStream.use { input ->
+                FileOutputStream(part).use { output ->
+                    val buffer = ByteArray(64 * 1024)
+                    while (true) {
+                        currentCoroutineContext().ensureActive()
+                        val read = input.read(buffer)
+                        if (read == -1) break
+                        output.write(buffer, 0, read)
+                        downloaded += read
+                        if (totalLength > 0) {
+                            val progress = ((downloaded * 100) / totalLength).toInt().coerceIn(0, 100)
+                            // Yalnızca yüzde değiştiğinde UI'ı güncelle
+                            if (progress != lastProgress) {
+                                lastProgress = progress
+                                _uiState.update {
+                                    it.copy(
+                                        downloadProgress = progress,
+                                        statusResId = R.string.status_downloading,
+                                        statusArg = progress
+                                    )
                                 }
                             }
                         }
-                        true
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        false
                     }
                 }
             }
 
-            if (success) {
-                _uiState.value = _uiState.value.copy(
-                    isDownloading = false,
-                    statusResId = R.string.status_preparing,
-                    statusArg = ""
-                )
-                val installed = withContext(Dispatchers.IO) {
-                    PackageInstallerHelper.installApkm(context, apkmFile)
-                }
-                if (installed) {
-                    _uiState.value = _uiState.value.copy(
-                        statusResId = R.string.status_confirm_prompt,
-                        statusArg = ""
-                    )
-                } else {
-                    _uiState.value = _uiState.value.copy(
-                        statusResId = R.string.status_install_failed,
-                        statusArg = ""
-                    )
-                }
-            } else {
-                _uiState.value = _uiState.value.copy(
-                    isDownloading = false,
-                    statusResId = R.string.status_download_failed,
-                    statusArg = ""
-                )
-            }
+            if (!ApkmCache.isValid(part, release)) return false
+            target.delete()
+            return part.renameTo(target)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        } finally {
+            activeConnection = null
+            conn?.disconnect()
+            if (part.exists()) part.delete()
         }
     }
 
-    fun launchF1TV(context: Context) {
-        val intent = context.packageManager.getLeanbackLaunchIntentForPackage("com.formulaone.production")
-            ?: context.packageManager.getLaunchIntentForPackage("com.formulaone.production")
+    fun launchF1TV() {
+        val pm = app.packageManager
+        val intent = pm.getLeanbackLaunchIntentForPackage(F1TV_PACKAGE_NAME)
+            ?: pm.getLaunchIntentForPackage(F1TV_PACKAGE_NAME)
 
         if (intent != null) {
-            context.startActivity(intent)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            app.startActivity(intent)
         } else {
-            _uiState.value = _uiState.value.copy(
-                statusResId = R.string.btn_not_installed,
-                statusArg = ""
-            )
+            _uiState.update { it.copy(statusResId = R.string.btn_not_installed, statusArg = null) }
+        }
+    }
+
+    /** Opens the system uninstall prompt; required when the installed F1 TV uses a different signing key. */
+    fun uninstallF1TV() {
+        try {
+            val intent = Intent(Intent.ACTION_DELETE, "package:$F1TV_PACKAGE_NAME".toUri()).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            app.startActivity(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }

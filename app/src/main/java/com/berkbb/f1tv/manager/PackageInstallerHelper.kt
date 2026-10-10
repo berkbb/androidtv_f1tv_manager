@@ -5,61 +5,68 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
 import java.io.File
-import java.io.FileInputStream
 import java.util.zip.ZipFile
+
+enum class InstallStartResult { STARTED, FAILED, NO_COMPATIBLE_ABI }
 
 object PackageInstallerHelper {
 
-    fun installApkm(context: Context, apkmFile: File): Boolean {
+    private val KNOWN_ABIS = listOf("arm64_v8a", "armeabi_v7a", "x86_64", "x86", "armeabi")
+
+    fun installApkm(context: Context, apkmFile: File): InstallStartResult {
         val packageInstaller = context.packageManager.packageInstaller
         val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
-        params.setAppPackageName("com.formulaone.production")
+        params.setAppPackageName(F1TV_PACKAGE_NAME)
 
-        var sessionId = -1
         var session: PackageInstaller.Session? = null
         try {
-            sessionId = packageInstaller.createSession(params)
-            session = packageInstaller.openSession(sessionId)
+            ZipFile(apkmFile).use { zip ->
+                val apkEntries = zip.entries().asSequence()
+                    .filter { !it.isDirectory && splitName(it.name).endsWith(".apk") }
+                    .toList()
 
-            val zip = ZipFile(apkmFile)
-            val entries = zip.entries()
+                // Cihazın desteklediği ABI'ler arasından pakette gerçekten bulunan en iyisini seç
+                val bundleAbis = apkEntries.mapNotNull { extractAbi(splitName(it.name)) }.toSet()
+                val bestAbi = if (bundleAbis.isEmpty()) null else {
+                    resolveBestAbi(android.os.Build.SUPPORTED_ABIS, bundleAbis)
+                        ?: return InstallStartResult.NO_COMPATIBLE_ABI
+                }
 
-            // Cihazın mimarisini ve desteklenen ABI listesini dinamik tespit et
-            val bestAbi = resolveBestAbi(android.os.Build.SUPPORTED_ABIS)
+                val sessionId = packageInstaller.createSession(params)
+                session = packageInstaller.openSession(sessionId)
+                val activeSession = session!!
 
-            while (entries.hasMoreElements()) {
-                val entry = entries.nextElement()
-                val name = entry.name
+                val written = mutableSetOf<String>()
+                for (entry in apkEntries) {
+                    val name = splitName(entry.name)
+                    if (!shouldIncludeSplit(name, bestAbi) || !written.add(name)) continue
 
-                if (!shouldIncludeSplit(name, bestAbi)) continue
-
-                // base.apk, cihaza uygun mimari spliti, dil ve ekran yoğunluğu (dpi) splitlerini yükle
-                zip.getInputStream(entry).use { inStream ->
-                    session.openWrite(name, 0, entry.size).use { outStream ->
-                        inStream.copyTo(outStream)
-                        session.fsync(outStream)
+                    // base.apk, cihaza uygun mimari spliti, dil ve ekran yoğunluğu (dpi) splitlerini yükle
+                    zip.getInputStream(entry).use { inStream ->
+                        activeSession.openWrite(name, 0, entry.size).use { outStream ->
+                            inStream.copyTo(outStream)
+                            activeSession.fsync(outStream)
+                        }
                     }
                 }
+
+                // Kurulumu başlat (Android TV yerel onay kutucuğunu açar)
+                val intent = Intent(context, InstallResultReceiver::class.java)
+                val pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    sessionId,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+                )
+                activeSession.commit(pendingIntent.intentSender)
             }
-            zip.close()
-
-            // Kurulumu başlat (Android TV yerel onay kutucuğunu açar)
-            val intent = Intent(context, InstallResultReceiver::class.java)
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                sessionId,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-            )
-
-            session.commit(pendingIntent.intentSender)
-            return true
+            return InstallStartResult.STARTED
         } catch (e: Exception) {
             e.printStackTrace()
             try {
                 session?.abandon()
             } catch (_: Exception) {}
-            return false
+            return InstallStartResult.FAILED
         } finally {
             try {
                 session?.close()
@@ -67,16 +74,19 @@ object PackageInstallerHelper {
         }
     }
 
-    fun resolveBestAbi(supportedAbis: Array<String>): String {
-        val mapped = supportedAbis.map { it.replace("-", "_") }
-        val knownAbis = listOf("arm64_v8a", "armeabi_v7a", "x86_64", "x86", "armeabi")
-        return mapped.firstOrNull { it in knownAbis } ?: "armeabi_v7a"
+    /** Session split names must not contain path separators; keep only the file name. */
+    fun splitName(entryName: String): String = entryName.substringAfterLast('/')
+
+    fun normalizeAbi(abi: String): String = abi.replace("-", "_")
+
+    /** First device ABI (in preference order) that the bundle actually ships, or null if none match. */
+    fun resolveBestAbi(supportedAbis: Array<String>, bundleAbis: Set<String> = KNOWN_ABIS.toSet()): String? {
+        return supportedAbis.map { normalizeAbi(it) }.firstOrNull { it in KNOWN_ABIS && it in bundleAbis }
     }
 
     fun extractAbi(entryName: String): String? {
-        val normalized = entryName.replace("-", "_")
-        val candidates = listOf("arm64_v8a", "armeabi_v7a", "x86_64", "x86", "armeabi")
-        for (candidate in candidates) {
+        val normalized = normalizeAbi(entryName)
+        for (candidate in KNOWN_ABIS) {
             val pattern = Regex("(?:^|[._-])$candidate(?:[._-]|$)")
             if (pattern.containsMatchIn(normalized)) {
                 return candidate
@@ -85,10 +95,9 @@ object PackageInstallerHelper {
         return null
     }
 
-    fun shouldIncludeSplit(entryName: String, bestAbi: String): Boolean {
+    fun shouldIncludeSplit(entryName: String, bestAbi: String?): Boolean {
         if (!entryName.endsWith(".apk")) return false
         val splitAbi = extractAbi(entryName) ?: return true
-        val normalizedBestAbi = bestAbi.replace("-", "_")
-        return splitAbi == normalizedBestAbi
+        return bestAbi != null && splitAbi == normalizeAbi(bestAbi)
     }
 }

@@ -1,26 +1,49 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+
+// AGP 9 compiles Kotlin natively (built-in Kotlin); only the Compose compiler plugin is applied
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+val appVersionName = "1.0.2"
+
+// Release signing: keystore.properties (git-ignored) or F1TV_* environment variables.
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+fun signingValue(key: String, env: String): String? = keystoreProperties.getProperty(key) ?: System.getenv(env)
+val releaseStoreFile = signingValue("storeFile", "F1TV_KEYSTORE_FILE")
+
 android {
     namespace = "com.berkbb.f1tv.manager"
-    compileSdk = 35
+    // Android 17 platform (API 37.2); targetSdk stays at 35 until on-device behavior review
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 2
+        }
+    }
 
     defaultConfig {
         applicationId = "com.berkbb.f1tv.manager"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 2
-        versionName = "1.0.1"
+        targetSdk = 35
+        versionCode = 3
+        versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
-        getByName("debug") {
-            // Default debug keystore
+        create("release") {
+            if (releaseStoreFile != null) {
+                storeFile = rootProject.file(releaseStoreFile)
+                storePassword = signingValue("storePassword", "F1TV_KEYSTORE_PASSWORD")
+                keyAlias = signingValue("keyAlias", "F1TV_KEY_ALIAS")
+                keyPassword = signingValue("keyPassword", "F1TV_KEY_PASSWORD")
+            }
         }
     }
 
@@ -28,58 +51,71 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8 code shrinking + resource shrinking (AndroidX/Compose ship their own consumer rules)
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (releaseStoreFile != null) {
+                signingConfigs.getByName("release")
+            } else {
+                // Fallback keeps local builds working, but debug-signed APKs cannot update each other across machines
+                logger.warn("F1TV: no release keystore configured (keystore.properties / F1TV_KEYSTORE_FILE); signing release with the debug key.")
+                signingConfigs.getByName("debug")
+            }
         }
     }
 
-    variantFilter {
-        if (buildType.name == "debug") {
-            ignore = true
+    // APK-only distribution: keep all language resources in the base APK if an AAB is ever built
+    bundle {
+        language {
+            enableSplit = false
         }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
+}
 
-    applicationVariants.all {
-        outputs.all {
-            val output = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            output?.outputFileName = "f1tv-manager-v${defaultConfig.versionName}-${name}.apk"
-        }
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
+}
+
+// APK output name: f1tv-manager-v<version>-release.apk (replaces the removed applicationVariants API)
+base {
+    archivesName.set("f1tv-manager-v$appVersionName")
+}
+
+androidComponents {
+    // Release-only packaging: the debug variant is disabled
+    beforeVariants(selector().withBuildType("debug")) { variantBuilder ->
+        variantBuilder.enable = false
     }
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
-    implementation("androidx.activity:activity-compose:1.9.3")
+    implementation("androidx.core:core-ktx:1.19.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.11.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
+    implementation("androidx.activity:activity-compose:1.13.0")
 
-    val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
+    val composeBom = platform("androidx.compose:compose-bom:2026.09.00")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
-
-    // TV Foundation
-    implementation("androidx.tv:tv-foundation:1.0.0-alpha11")
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")

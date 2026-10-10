@@ -1,0 +1,92 @@
+package com.berkbb.f1tv.manager
+
+const val F1TV_PACKAGE_NAME = "com.formulaone.production"
+const val UPSTREAM_RELEASES_URL = "https://api.github.com/repos/Alexvbp/f1tv-4k-patch/releases?per_page=20"
+
+data class ReleaseAsset(
+    val name: String,
+    val downloadUrl: String,
+    val size: Long,
+    val digest: String?
+)
+
+data class RawRelease(
+    val tagName: String,
+    val isDraft: Boolean,
+    val isPrerelease: Boolean,
+    val assets: List<ReleaseAsset>
+)
+
+data class ReleaseInfo(
+    val tag: String,
+    val downloadUrl: String,
+    val size: Long,
+    val sha256: String?
+)
+
+enum class UpdateStatus { NOT_INSTALLED, UPDATE_AVAILABLE, UP_TO_DATE }
+
+/**
+ * Pure (Android-free) release selection and version comparison logic.
+ */
+object ReleaseResolver {
+
+    private val VERSION_PREFIX = Regex("^[vV]?(\\d+(?:\\.\\d+)*)")
+    private val STABLE_TAG = Regex("^[vV]?\\d+(?:\\.\\d+)*$")
+
+    /** Extracts the leading numeric version: "v3.0.49.4" and "3.0.49.4-SP166.4.1-release-R54.2-tv" -> [3, 0, 49, 4]. */
+    fun parseVersion(raw: String?): List<Int> {
+        val match = VERSION_PREFIX.find(raw?.trim().orEmpty()) ?: return emptyList()
+        return match.groupValues[1].split('.').map { it.toIntOrNull() ?: 0 }
+    }
+
+    /** Segment-wise numeric comparison; missing segments count as 0. */
+    fun compareVersions(a: List<Int>, b: List<Int>): Int {
+        for (i in 0 until maxOf(a.size, b.size)) {
+            val diff = a.getOrElse(i) { 0 }.compareTo(b.getOrElse(i) { 0 })
+            if (diff != 0) return diff
+        }
+        return 0
+    }
+
+    /** True only for plain version tags such as "v3.0.49.4" (rejects "-dev", "-shield-…" variants). */
+    fun isStableTag(tag: String): Boolean = STABLE_TAG.matches(tag.trim())
+
+    /** Normalizes a GitHub asset digest ("sha256:abc…") into a lowercase hex string, or null. */
+    fun parseSha256(digest: String?): String? {
+        val value = digest?.trim()?.lowercase() ?: return null
+        val hex = value.removePrefix("sha256:")
+        return if (value.startsWith("sha256:") && hex.length == 64 && hex.all { it in "0123456789abcdef" }) hex else null
+    }
+
+    /** Picks the newest stable release that ships an .apkm asset. */
+    fun selectLatestStable(releases: List<RawRelease>): ReleaseInfo? {
+        return releases
+            .asSequence()
+            .filter { !it.isDraft && !it.isPrerelease && isStableTag(it.tagName) }
+            .mapNotNull { release ->
+                val asset = release.assets.firstOrNull { it.name.endsWith(".apkm") && it.downloadUrl.isNotBlank() }
+                    ?: return@mapNotNull null
+                ReleaseInfo(release.tagName.trim(), asset.downloadUrl, asset.size, parseSha256(asset.digest))
+            }
+            .sortedWith { a, b -> compareVersions(parseVersion(b.tag), parseVersion(a.tag)) }
+            .firstOrNull()
+    }
+
+    fun evaluate(installedVersion: String?, isInstalled: Boolean, latestTag: String?): UpdateStatus {
+        if (!isInstalled) return UpdateStatus.NOT_INSTALLED
+        val latest = parseVersion(latestTag)
+        if (latest.isEmpty()) return UpdateStatus.UP_TO_DATE
+        return if (compareVersions(latest, parseVersion(installedVersion)) > 0) {
+            UpdateStatus.UPDATE_AVAILABLE
+        } else {
+            UpdateStatus.UP_TO_DATE
+        }
+    }
+
+    /** Cache file name bound to the release tag so a new release never reuses an older package. */
+    fun cacheFileName(tag: String): String {
+        val safe = tag.trim().replace(Regex("[^A-Za-z0-9._-]"), "_")
+        return "f1tv_$safe.apkm"
+    }
+}

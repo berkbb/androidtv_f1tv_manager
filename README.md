@@ -16,16 +16,18 @@ Furthermore, official updates are distributed as multi-part Android App Bundles 
 
 ## ✨ Features
 
-- **Direct GitHub Release Tracking:** Automatically checks GitHub API for the latest Alexvbp 4K/UHD release tag and compares it against the locally installed package (`com.formulaone.production`).
-- **On-Device DEX Patching & Self-Signing Engine:** Includes a standalone on-device DEX bytecode patcher (`OnDevicePatcher.kt`) and local APK signer (`ApkSignerHelper.kt`), ensuring full independence even if upstream release repositories cease publishing.
-- **Dynamic ABI & Architecture Detection:** Inspects TV processor architecture at runtime (`Build.SUPPORTED_ABIS`). Seamlessly selects 32-bit (`armeabi-v7a`) splits for older platforms (like MediaTek MT5596) or 64-bit (`arm64-v8a`) splits for newer 64-bit and Google TV models.
+- **Direct GitHub Release Tracking:** Queries the GitHub Releases API for the newest *stable* Alexvbp 4K/UHD release (pre-release / device-specific variants such as `-dev` or `-shield-…` are skipped) and compares it numerically against the installed package (`com.formulaone.production`).
+- **Verified, Version-Bound Downloads:** Each `.apkm` is cached under its release tag, downloaded to a temporary `.part` file, and only accepted after its SHA-256 matches the digest published by GitHub (exact size check as fallback). A new release never reuses an older cached package.
+- **Signing-Key Conflict Guidance:** If an official (Play Store) F1 TV build is installed, Android rejects the patched build (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`). The manager detects this and offers a one-click *Uninstall Current F1 TV* action before reinstalling.
+- **Dynamic ABI & Architecture Detection:** Inspects TV processor architecture at runtime (`Build.SUPPORTED_ABIS`). Selects the best device ABI that the bundle actually ships — 64-bit (`arm64-v8a`) when available, 32-bit (`armeabi-v7a`) otherwise — and reports an incompatibility instead of installing a package without native libraries.
 - **Native Split APK Streaming:** Extracts `.apkm` ZIP archives in cache and streams the exact required split APKs directly into Android's native `PackageInstaller.Session`. No root required; uses standard TV user-confirmation prompts.
+- **Storage Pre-Check & Cancellable Downloads:** Verifies there is enough free space for the download plus the installer's staging copy before starting, and the download can be cancelled at any time from the remote (partial files are removed).
 - **Fresh Install & Update Handling:**
   - If F1 TV is **not installed**: Prompts to download and perform an initial installation.
   - If an **update is available**: Prompts to download and apply the update.
   - If **up to date**: Allows verification or clean reinstallation.
 - **Trilingual UI (English default, Turkish & Romanian):** Fully localized interface with an instantaneous in-app language switcher (`🌐 EN` / `🌐 TR` / `🌐 RO`) that switches text and status live without restarting the app.
-- **Automated Localization & Architecture Verification:** Full unit test suite (`LocalizationParityTest`, `DynamicArchitectureAndLocaleTest`, `OnDevicePatcherTest`) ensuring 1:1 key parity and ABI integrity.
+- **Automated Localization & Architecture Verification:** Full unit test suite (`LocalizationParityTest`, `DynamicArchitectureAndLocaleTest`, `ReleaseResolverTest`, `ApkmCacheTest`, `ManifestConfigurationTest`) covering 1:1 key parity, ABI selection, version comparison, download verification, and manifest security invariants.
 - **100% D-Pad & TV Remote Optimized:** Built from scratch for 10-foot television viewing with high-contrast focus rings, custom button hover states, and loading indicators.
 - **Ultra-Lightweight Footprint:** Native Jetpack Compose UI without bloated webview or cross-platform runtime overhead.
 
@@ -55,12 +57,13 @@ Furthermore, official updates are distributed as multi-part Android App Bundles 
 
 ## 🛠️ Tech Stack & Requirements
 
-- **Language:** Kotlin 2.0.21
-- **UI Framework:** Jetpack Compose (BOM 2024.10.01) + Material 3
-- **Build System:** Gradle 8.11.1
+- **Language:** Kotlin 2.2.10 (AGP built-in Kotlin)
+- **UI Framework:** Jetpack Compose (BOM 2026.09.00) + Material 3
+- **Build System:** Gradle 9.7.1 + Android Gradle Plugin 9.4.1 (R8 shrinking enabled, ~1 MB release APK)
+- **Compile SDK:** API 37.2 (Android 17) — requires the *Android SDK Platform 37.2* package and Android Studio 2026.1.3 or newer
 - **Java Compatibility:** JDK 21 (LTS)
 - **Minimum SDK:** API 26 (Android 8.0 Oreo or newer)
-- **Target SDK:** API 34 (Android 14)
+- **Target SDK:** API 35 (Android 15)
 
 ---
 
@@ -68,12 +71,11 @@ Furthermore, official updates are distributed as multi-part Android App Bundles 
 
 ### 💻 Method 1: Command Line Interface (CLI)
 
-Ensure Zulu OpenJDK 21 and the Android SDK are installed, then run the following commands:
+Ensure a JDK (17–21) and the Android SDK are installed, then run the following commands:
 
 ```bash
-# 1. Set Java 21 environment path (macOS)
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
-export PATH=$JAVA_HOME/bin:$PATH
+# 1. Java environment
+# Point JAVA_HOME at a JDK 17–21 (macOS example: export JAVA_HOME=$(/usr/libexec/java_home -v 21))
 
 # 2. Run automated unit test suite
 ./gradlew test
@@ -90,10 +92,25 @@ export PATH=$JAVA_HOME/bin:$PATH
 
 ---
 
+### 🔐 Release Signing
+
+Release builds are signed with a dedicated keystore when one is configured, so APKs built on different machines can update each other. Create a git-ignored `keystore.properties` in the repository root:
+
+```properties
+storeFile=/path/to/f1tv-manager-release.jks
+storePassword=…
+keyAlias=f1tv-manager
+keyPassword=…
+```
+
+Alternatively set the `F1TV_KEYSTORE_FILE`, `F1TV_KEYSTORE_PASSWORD`, `F1TV_KEY_ALIAS`, and `F1TV_KEY_PASSWORD` environment variables. Without either, the build falls back to the local debug key and prints a warning.
+
+---
+
 ### 📍 Compiled APK Location
 
 Upon build completion, the generated release APK file is located at:
-- **Release APK:** `app/build/outputs/apk/release/f1tv-manager-v1.0.1-release.apk`
+- **Release APK:** `app/build/outputs/apk/release/f1tv-manager-v1.0.2-release.apk`
 
 ---
 
@@ -102,11 +119,12 @@ Upon build completion, the generated release APK file is located at:
 ### 📺 Daily Usage & In-App Updates
 * **No Developer Options Required:** Once the manager app is installed, regular F1 TV updates do not require TV Developer Options to remain enabled.
 * **Install Unknown Apps Permission:** Only the standard Android *"Install unknown apps"* (`REQUEST_INSTALL_PACKAGES`) permission is needed. The application automatically redirects you to this system setting upon initial run.
+* **Uninstall Prompt:** `REQUEST_DELETE_PACKAGES` is declared solely to open the system uninstall confirmation for a conflicting official F1 TV build; nothing is removed without your confirmation.
 
 ### 📦 Initial TV Installation Methods
 
 #### 🔹 Method 1: USB Flash Drive or File Manager (No Developer Mode Required - Easy)
-1. Copy `f1tv-manager-v1.0.1-release.apk` to a USB flash drive or transfer via **Send Files to TV** / **X-plore**.
+1. Copy `f1tv-manager-v1.0.2-release.apk` to a USB flash drive or transfer via **Send Files to TV** / **X-plore**.
 2. Open the file manager on your TV and install the APK.
 
 #### 🔹 Method 2: Network ADB Sideloading (Requires TV Developer Options)
@@ -116,7 +134,7 @@ Upon build completion, the generated release APK file is located at:
 
 ```bash
 adb connect [TV_IP_ADDRESS]:5555
-adb install -r app/build/outputs/apk/release/f1tv-manager-v1.0.1-release.apk
+adb install -r app/build/outputs/apk/release/f1tv-manager-v1.0.2-release.apk
 ```
 
 ---

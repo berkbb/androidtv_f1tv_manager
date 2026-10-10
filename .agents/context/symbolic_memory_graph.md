@@ -4,6 +4,8 @@
 graph TD
     UI[MainActivity & Compose UI] --> VM[UpdaterViewModel]
     VM --> API[GitHub Releases API]
+    VM --> Resolver[ReleaseResolver]
+    VM --> Cache[ApkmCache - SHA-256 verified]
     VM --> Helper[PackageInstallerHelper]
     Helper --> Zip[APKM Streamer]
     Zip --> System[Android PackageInstaller Session]
@@ -15,4 +17,6 @@ graph TD
     Sub --> RO[values-ro/strings.xml - RO]
     
     Test[LocalizationParityTest] --> Sub
+    RTest[ReleaseResolverTest] --> Resolver
+    CTest[ApkmCacheTest] --> Cache
 ```

@@ -12,10 +12,16 @@ This rule document establishes strict privacy, metadata sanitization, and securi
 - **Relative Markdown Links:** All documentation cross-references must use relative Markdown links (e.g. `[LICENSE](LICENSE)`).
 
 ### 2. Identity & Certificate Sanitization
-- **Self-Signed Certificates:** Any programmatic or build-time X.509 certificate generation (e.g. in `ApkSignerHelper.kt`) must use standard open-source distinguished names:
+- **Generated Certificates:** Any programmatic or build-time X.509 certificate generation must use standard open-source distinguished names:
   `CN=F1TVManager, O=OpenSource, C=US`
+- **Release Signing Secrets:** Keystores and passwords are supplied only through git-ignored `keystore.properties` or `F1TV_*` environment variables.
 - **Zero Sensitive Data:** No private email addresses, personal phone numbers, physical addresses, API secrets, or passwords may be stored anywhere in the codebase.
 
 ### 3. Zero Telemetry & Privacy Preservation
 - **No Analytics / Tracking SDKs:** The application does not include any analytics libraries, telemetry trackers, or advertising SDKs.
-- **Minimal Network Surface:** The only permitted outbound HTTP calls are public GitHub release tag queries and `.apkm` asset downloads.
+- **Minimal Network Surface:** The only permitted outbound HTTP calls are public GitHub release queries and `.apkm` asset downloads.
+
+### 4. Install Pipeline Security
+- `InstallResultReceiver` must remain `android:exported="false"`.
+- Downloaded bundles must pass SHA-256 digest (or exact size) verification before being handed to `PackageInstaller`.
+- Never extract archive entries to the filesystem using unvalidated entry names (Zip Slip).

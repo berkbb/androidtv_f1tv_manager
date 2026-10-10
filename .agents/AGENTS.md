@@ -16,8 +16,8 @@ All AI agents operating within this repository must adhere strictly to this cons
 - **No Hardcoded Display Strings:** UI components must never contain hardcoded display strings; all text must be accessed through Compose `stringResource(R.string.key)` or resource IDs.
 
 ### 2. Mandatory Verification & Automated Testing Invariant ("Test is a MUST")
-- **Non-Negotiable Execution Gate:** Every single modification affecting source code, string resources, architecture handling, DEX bytecode patching, or packaging **MUST** be verified by running the automated unit test suite (`./gradlew test`) before completing any task.
-- **Zero Test Failure Policy:** No task is considered complete with failing or skipped assertions in `LocalizationParityTest.kt`, `DynamicArchitectureAndLocaleTest.kt`, or `OnDevicePatcherTest.kt`.
+- **Non-Negotiable Execution Gate:** Every single modification affecting source code, string resources, architecture handling, download/cache verification, manifest configuration, or packaging **MUST** be verified by running the automated unit test suite (`./gradlew test`) before completing any task.
+- **Zero Test Failure Policy:** No task is considered complete with failing or skipped assertions in `LocalizationParityTest.kt`, `DynamicArchitectureAndLocaleTest.kt`, `ReleaseResolverTest.kt`, `ApkmCacheTest.kt`, or `ManifestConfigurationTest.kt`.
 - **Release Verification:** Build and assembly tasks must confirm successful execution of `./gradlew assemble`.
 
 ### 3. Dynamic Hardware & Platform Rule
@@ -31,7 +31,8 @@ All AI agents operating within this repository must adhere strictly to this cons
 
 ### 5. Strict Privacy, Sanitization & Path Hygiene Invariant
 - **Zero Absolute Local Paths:** Agents must never write or commit absolute local system paths (such as `/Users/`, `C:\Users\`, or `file:///Users/`) into any source file, Markdown documentation, or build script. All internal Markdown references must use clean relative paths.
-- **Zero Sensitive / Personal Metadata:** Programmatic self-signed certificates (e.g., in `ApkSignerHelper.kt`) must use generic open-source distinguished names (`CN=F1TVManager, O=OpenSource, C=US`) rather than personal identifiers or country designations.
+- **Zero Sensitive / Personal Metadata:** Any generated certificate must use generic open-source distinguished names (`CN=F1TVManager, O=OpenSource, C=US`). Release keystores and their passwords live only in git-ignored `keystore.properties` or `F1TV_*` environment variables; machine-specific files (`local.properties`) and JDK paths (`org.gradle.java.home`) must never be committed.
+- **Install Pipeline Security:** `InstallResultReceiver` must stay non-exported, downloaded bundles must be verified (SHA-256 digest or exact size) before installation, and `<queries>` must declare `com.formulaone.production`.
 - **Zero Telemetry & Secret Leakage:** The application must strictly contain zero tracking SDKs, zero telemetry, zero analytics, and zero credentials.
 
 ---

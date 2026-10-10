@@ -10,7 +10,9 @@ import javax.xml.parsers.DocumentBuilderFactory
 
 class LocalizationParityTest {
 
-    private val resDir = File("src/main/res")
+    // Gradle runs tests from the module dir; IDE runners may use the project root
+    private val resDir = listOf(File("src/main/res"), File("app/src/main/res")).firstOrNull { it.isDirectory }
+        ?: File("src/main/res")
 
     private fun parseStringKeys(file: File): Map<String, String> {
         assertTrue("File ${file.absolutePath} must exist", file.exists())

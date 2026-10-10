@@ -1,10 +1,7 @@
-# Keep Jetpack Compose & Kotlin coroutines
--keep class androidx.compose.** { *; }
--keep class androidx.tv.** { *; }
--keep class kotlinx.coroutines.** { *; }
+# R8 is enabled for release builds. AndroidX, Compose and coroutines ship consumer rules;
+# components declared in AndroidManifest.xml (activity, receiver) are kept automatically.
 
-# Keep App classes and ViewModels
--keep class com.berkbb.f1tv.manager.** { *; }
-
-# Keep Android PackageInstaller and Broadcast Receivers
--keep class * extends android.content.BroadcastReceiver
+# UpdaterViewModel is instantiated reflectively by the default ViewModelProvider factory.
+-keepclassmembers class * extends androidx.lifecycle.AndroidViewModel {
+    <init>(android.app.Application);
+}

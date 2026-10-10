@@ -8,12 +8,10 @@ Comprehensive build and unit testing procedure to validate full repository integ
 ## 🛠️ Execution Procedure
 
 ```bash
-# 1. Environment Setup
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
-export PATH=$JAVA_HOME/bin:$PATH
+# 1. Environment: JAVA_HOME must point at a JDK 17–21
 
-# 2. Run All Unit Tests
-./gradlew testDebugUnitTest
+# 2. Run All Unit Tests (debug variant is disabled; tests run against release)
+./gradlew test
 
 # 3. Assemble Release Build
 ./gradlew assembleRelease

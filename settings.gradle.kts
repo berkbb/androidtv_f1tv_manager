@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "F1TVUpdaterPhilips"
+rootProject.name = "F1TVManager"
 include(":app")
