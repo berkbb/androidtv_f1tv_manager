@@ -15,7 +15,7 @@ Automated procedure for checking 1:1 parity across all supported language resour
 2. **Execute Automated Parity Test:**
    ```bash
    # JAVA_HOME must point at a JDK 17–21; the debug variant is disabled
-   ./gradlew testReleaseUnitTest --tests com.berkbb.f1tv.manager.LocalizationParityTest
+   ./gradlew testReleaseUnitTest --tests com.berkbb.pitwall.LocalizationParityTest
    ```
 
 3. **Validate Checks:**

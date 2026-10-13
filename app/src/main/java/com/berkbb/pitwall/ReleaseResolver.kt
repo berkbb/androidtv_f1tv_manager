@@ -1,4 +1,4 @@
-package com.berkbb.f1tv.manager
+package com.berkbb.pitwall
 
 const val F1TV_PACKAGE_NAME = "com.formulaone.production"
 const val UPSTREAM_RELEASES_URL = "https://api.github.com/repos/Alexvbp/f1tv-4k-patch/releases?per_page=20"

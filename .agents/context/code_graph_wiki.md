@@ -4,7 +4,7 @@
 
 ### 1. `MainActivity.kt`
 - **Role:** Entry point, Jetpack Compose root, reactive `ConfigurationContext` locale manager, remote D-Pad focus handlers.
-- **Key Symbols:** `MainActivity`, `F1TVManagerScreen`, `InfoCard`, `TvActionButton` (single focus target, optional `modifier`), About `Dialog`.
+- **Key Symbols:** `MainActivity`, `PitwallScreen`, `InfoCard`, `TvActionButton` (single focus target, optional `modifier`), About `Dialog`.
 
 ### 2. `UpdaterViewModel.kt`
 - **Role:** MVVM StateFlow manager (atomic `update {}`), GitHub release list fetch, verified `.part` download engine, install permission dispatcher, uninstall prompt for signing-key conflicts. Uses the application context only.

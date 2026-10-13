@@ -1,4 +1,4 @@
-package com.berkbb.f1tv.manager
+package com.berkbb.pitwall
 
 import android.content.BroadcastReceiver
 import android.content.Context

@@ -1,4 +1,4 @@
-package com.berkbb.f1tv.manager
+package com.berkbb.pitwall
 
 import android.app.Application
 import android.content.Intent
@@ -173,7 +173,7 @@ class UpdaterViewModel(application: Application) : AndroidViewModel(application)
     private suspend fun fetchLatestRelease(): ReleaseInfo? = withContext(Dispatchers.IO) {
         val connection = (URL(UPSTREAM_RELEASES_URL).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
-            setRequestProperty("User-Agent", "F1TV-AndroidTV-Manager/${BuildConfig.VERSION_NAME}")
+            setRequestProperty("User-Agent", "PitwallUpdater/${BuildConfig.VERSION_NAME}")
             setRequestProperty("Accept", "application/vnd.github+json")
             connectTimeout = 10000
             readTimeout = 10000
@@ -326,7 +326,7 @@ class UpdaterViewModel(application: Application) : AndroidViewModel(application)
             conn = (URL(release.downloadUrl).openConnection() as HttpURLConnection).also { activeConnection = it }.apply {
                 requestMethod = "GET"
                 instanceFollowRedirects = true
-                setRequestProperty("User-Agent", "F1TV-AndroidTV-Manager/${BuildConfig.VERSION_NAME}")
+                setRequestProperty("User-Agent", "PitwallUpdater/${BuildConfig.VERSION_NAME}")
                 connectTimeout = 15000
                 readTimeout = 30000
             }

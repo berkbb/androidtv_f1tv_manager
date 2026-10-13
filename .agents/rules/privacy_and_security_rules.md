@@ -13,8 +13,8 @@ This rule document establishes strict privacy, metadata sanitization, and securi
 
 ### 2. Identity & Certificate Sanitization
 - **Generated Certificates:** Any programmatic or build-time X.509 certificate generation must use standard open-source distinguished names:
-  `CN=F1TVManager, O=OpenSource, C=US`
-- **Release Signing Secrets:** Keystores and passwords are supplied only through git-ignored `keystore.properties` or `F1TV_*` environment variables.
+  `CN=PitwallUpdater, O=OpenSource, C=US`
+- **Release Signing Secrets:** Keystores and passwords are supplied only through git-ignored `keystore.properties` or `PITWALL_*` environment variables.
 - **Zero Sensitive Data:** No private email addresses, personal phone numbers, physical addresses, API secrets, or passwords may be stored anywhere in the codebase.
 
 ### 3. Zero Telemetry & Privacy Preservation

@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">F1 TV Yöneticisi</string>
-    <string name="header_title">F1 TV YÖNETİCİSİ</string>
+    <string name="app_name">Pitwall Updater</string>
+    <string name="header_title">PITWALL UPDATER</string>
     <string name="header_subtitle">%1$s %2$s • %3$s (%4$s)</string>
     
     <string name="btn_launch_f1">F1 TV\'yi Başlat</string>
@@ -35,7 +35,7 @@
     <string name="btn_reinstall">Yeniden Kur / Güncelle</string>
     <string name="btn_downloading">İndiriliyor…</string>
     <string name="btn_info">ℹ️ Bilgi</string>
-    <string name="dialog_about_title">F1 TV Yöneticisi Hakkında</string>
+    <string name="dialog_about_title">Pitwall Updater Hakkında</string>
     <string name="dialog_developer_label">Geliştiren:</string>
     <string name="dialog_developer_name">berkbb</string>
     <string name="dialog_website_label">Web Sitesi:</string>
@@ -43,7 +43,7 @@
     <string name="dialog_patch_label">F1 TV 4K/UHD Yama:</string>
     <string name="dialog_patch_author">Alexvbp (GitHub)</string>
     <string name="dialog_device_label">Cihaz &amp; Platform:</string>
-    <string name="dialog_disclaimer">Resmi olmayan, bağımsız açık kaynak yardımcı araçtır. Formula One Licensing B.V. veya Formula 1 ile resmi bir bağı yoktur.</string>
+    <string name="dialog_disclaimer">F1 TV uygulaması için resmi olmayan, bağımsız açık kaynak güncelleyicidir. Formula One Licensing B.V. veya Formula 1 ile resmi bir bağı yoktur.</string>
     <string name="btn_language">🌐 %1$s</string>
     <string name="btn_uninstall_f1">Mevcut F1 TV\'yi Kaldır</string>
     <string name="status_signature_conflict">Yüklü F1 TV farklı bir anahtarla imzalanmış. Önce kaldırın, ardından yamalı sürümü kurun.</string>

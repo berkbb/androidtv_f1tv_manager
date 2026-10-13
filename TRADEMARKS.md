@@ -1,6 +1,6 @@
 # Trademark and Non-Affiliation Notice
 
-This project is an independent, unofficial open-source utility for Android TV and Google TV platforms. It is not affiliated with, endorsed by, sponsored by, authorized by, or officially connected with Formula One Licensing B.V., Formula One Group, Liberty Media, or any of their subsidiaries or affiliates.
+Pitwall Updater is an independent, unofficial open-source utility for Android TV and Google TV platforms. It is not affiliated with, endorsed by, sponsored by, authorized by, or officially connected with Formula One Licensing B.V., Formula One Group, Liberty Media, or any of their subsidiaries or affiliates.
 
 **Formula 1, F1, FORMULA ONE, F1 TV**, and related names, logos, and emblems are trademarks of their respective owners. They are mentioned only to identify the services or products this project is designed to work with; this notice does not grant permission to use those trademarks.
 

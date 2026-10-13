@@ -9,16 +9,16 @@ plugins {
 
 val appVersionName = "1.0.2"
 
-// Release signing: keystore.properties (git-ignored) or F1TV_* environment variables.
+// Release signing: keystore.properties (git-ignored) or PITWALL_* environment variables.
 val keystoreProperties = Properties().apply {
     val file = rootProject.file("keystore.properties")
     if (file.exists()) file.inputStream().use { load(it) }
 }
 fun signingValue(key: String, env: String): String? = keystoreProperties.getProperty(key) ?: System.getenv(env)
-val releaseStoreFile = signingValue("storeFile", "F1TV_KEYSTORE_FILE")
+val releaseStoreFile = signingValue("storeFile", "PITWALL_KEYSTORE_FILE")
 
 android {
-    namespace = "com.berkbb.f1tv.manager"
+    namespace = "com.berkbb.pitwall"
     // Android 17 platform (API 37.2); targetSdk stays at 35 until on-device behavior review
     compileSdk {
         version = release(37) {
@@ -27,7 +27,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.berkbb.f1tv.manager"
+        applicationId = "com.berkbb.pitwall"
         minSdk = 26
         targetSdk = 35
         versionCode = 3
@@ -40,9 +40,9 @@ android {
         create("release") {
             if (releaseStoreFile != null) {
                 storeFile = rootProject.file(releaseStoreFile)
-                storePassword = signingValue("storePassword", "F1TV_KEYSTORE_PASSWORD")
-                keyAlias = signingValue("keyAlias", "F1TV_KEY_ALIAS")
-                keyPassword = signingValue("keyPassword", "F1TV_KEY_PASSWORD")
+                storePassword = signingValue("storePassword", "PITWALL_KEYSTORE_PASSWORD")
+                keyAlias = signingValue("keyAlias", "PITWALL_KEY_ALIAS")
+                keyPassword = signingValue("keyPassword", "PITWALL_KEY_PASSWORD")
             }
         }
     }
@@ -62,7 +62,7 @@ android {
                 signingConfigs.getByName("release")
             } else {
                 // Fallback keeps local builds working, but debug-signed APKs cannot update each other across machines
-                logger.warn("F1TV: no release keystore configured (keystore.properties / F1TV_KEYSTORE_FILE); signing release with the debug key.")
+                logger.warn("Pitwall: no release keystore configured (keystore.properties / PITWALL_KEYSTORE_FILE); signing release with the debug key.")
                 signingConfigs.getByName("debug")
             }
         }
@@ -90,9 +90,9 @@ kotlin {
     }
 }
 
-// APK output name: f1tv-manager-v<version>-release.apk (replaces the removed applicationVariants API)
+// APK output name: pitwall-updater-v<version>-release.apk (replaces the removed applicationVariants API)
 base {
-    archivesName.set("f1tv-manager-v$appVersionName")
+    archivesName.set("pitwall-updater-v$appVersionName")
 }
 
 androidComponents {

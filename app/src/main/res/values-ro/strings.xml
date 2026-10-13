@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">Manager F1 TV</string>
-    <string name="header_title">MANAGER F1 TV</string>
+    <string name="app_name">Pitwall Updater</string>
+    <string name="header_title">PITWALL UPDATER</string>
     <string name="header_subtitle">%1$s %2$s • %3$s (%4$s)</string>
     
     <string name="btn_launch_f1">Lansează F1 TV</string>
@@ -35,7 +35,7 @@
     <string name="btn_reinstall">Reinstalează / Verifică</string>
     <string name="btn_downloading">Se descarcă…</string>
     <string name="btn_info">ℹ️ Info</string>
-    <string name="dialog_about_title">Despre Manager F1 TV</string>
+    <string name="dialog_about_title">Despre Pitwall Updater</string>
     <string name="dialog_developer_label">Dezvoltator:</string>
     <string name="dialog_developer_name">berkbb</string>
     <string name="dialog_website_label">Site web:</string>
@@ -43,7 +43,7 @@
     <string name="dialog_patch_label">Patch F1 TV 4K/UHD:</string>
     <string name="dialog_patch_author">Alexvbp (GitHub)</string>
     <string name="dialog_device_label">Dispozitiv &amp; Platformă:</string>
-    <string name="dialog_disclaimer">Utilitar open-source neoficial și independent. Nu este afiliat sau aprobat de Formula One Licensing B.V. sau Formula 1.</string>
+    <string name="dialog_disclaimer">Actualizator open-source neoficial și independent pentru aplicația F1 TV. Nu este afiliat sau aprobat de Formula One Licensing B.V. sau Formula 1.</string>
     <string name="btn_language">🌐 %1$s</string>
     <string name="btn_uninstall_f1">Dezinstalează F1 TV actual</string>
     <string name="status_signature_conflict">F1 TV instalat este semnat cu o altă cheie. Dezinstalați-l mai întâi, apoi instalați versiunea modificată.</string>

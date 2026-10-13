@@ -1,9 +1,18 @@
 # Changelog
 
-All notable changes to the **F1 TV Manager for Android TV & Google TV** project will be documented in this file.
+All notable changes to the **Pitwall Updater for Android TV & Google TV** (formerly F1 TV Manager) project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [Unreleased]
+
+### Changed
+- **Renamed to Pitwall Updater:** The app is now called *Pitwall Updater* in all locales, so the Formula 1 / F1 TV trademarks are used only to describe compatibility. The application ID and Kotlin package moved from `com.berkbb.f1tv.manager` to `com.berkbb.pitwall` (it installs as a new app next to the old one), the Gradle root project is `PitwallUpdater`, the APK is `pitwall-updater-v<version>-release.apk`, and the signing environment variables are `PITWALL_*`.
+- **Neutral Visual Identity:** Replaced the F1-style banner and red/dark palette with a generic update icon and a violet accent (`#7C4DFF`).
+- **Documentation:** Reworded the README to describe the project as an unofficial updater and added a prominent non-affiliation notice.
 
 ---
 

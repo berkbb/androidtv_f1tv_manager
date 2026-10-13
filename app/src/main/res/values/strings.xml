@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">F1 TV Manager</string>
-    <string name="header_title">F1 TV MANAGER</string>
+    <string name="app_name">Pitwall Updater</string>
+    <string name="header_title">PITWALL UPDATER</string>
     <string name="header_subtitle">%1$s %2$s • %3$s (%4$s)</string>
     
     <string name="btn_launch_f1">Launch F1 TV</string>
@@ -35,7 +35,7 @@
     <string name="btn_reinstall">Reinstall / Verify</string>
     <string name="btn_downloading">Downloading…</string>
     <string name="btn_info">ℹ️ Info</string>
-    <string name="dialog_about_title">About F1 TV Manager</string>
+    <string name="dialog_about_title">About Pitwall Updater</string>
     <string name="dialog_developer_label">Developer:</string>
     <string name="dialog_developer_name">berkbb</string>
     <string name="dialog_website_label">Website:</string>
@@ -43,7 +43,7 @@
     <string name="dialog_patch_label">F1 TV 4K/UHD Patch:</string>
     <string name="dialog_patch_author">Alexvbp (GitHub)</string>
     <string name="dialog_device_label">Device &amp; Platform:</string>
-    <string name="dialog_disclaimer">Unofficial, independent open-source utility. Not affiliated with or endorsed by Formula One Licensing B.V. or Formula 1.</string>
+    <string name="dialog_disclaimer">Unofficial, independent open-source updater for the F1 TV app. Not affiliated with or endorsed by Formula One Licensing B.V. or Formula 1.</string>
     <string name="btn_language">🌐 %1$s</string>
     <string name="btn_uninstall_f1">Uninstall Current F1 TV</string>
     <string name="status_signature_conflict">The installed F1 TV is signed with a different key. Uninstall it first, then install the patched version.</string>

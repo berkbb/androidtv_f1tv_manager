@@ -1,4 +1,4 @@
-package com.berkbb.f1tv.manager
+package com.berkbb.pitwall
 
 import android.content.Context
 import android.content.res.Configuration
@@ -31,11 +31,11 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.edit
 import java.util.Locale
 
-val F1Red = Color(0xFFE10600)
-val F1Dark = Color(0xFF15151E)
-val F1DarkCard = Color(0xFF1F1F2C)
-val F1Gray = Color(0xFF949498)
-val F1White = Color(0xFFFFFFFF)
+val AccentColor = Color(0xFF7C4DFF)
+val BackgroundDark = Color(0xFF111318)
+val CardDark = Color(0xFF1C1F26)
+val TextGray = Color(0xFF949498)
+val TextWhite = Color(0xFFFFFFFF)
 
 class MainActivity : ComponentActivity() {
 
@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
                 LocalConfiguration provides localizedConfiguration,
                 LocalContext provides localizedContext
             ) {
-                F1TVManagerScreen(
+                PitwallScreen(
                     viewModel = viewModel,
                     currentLanguage = currentLanguage,
                     onToggleLanguage = {
@@ -104,7 +104,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun F1TVManagerScreen(
+fun PitwallScreen(
     viewModel: UpdaterViewModel,
     currentLanguage: String,
     onToggleLanguage: () -> Unit
@@ -115,7 +115,7 @@ fun F1TVManagerScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(F1Dark)
+            .background(BackgroundDark)
             .padding(48.dp)
     ) {
         Column(
@@ -134,12 +134,12 @@ fun F1TVManagerScreen(
                             modifier = Modifier
                                 .width(6.dp)
                                 .height(32.dp)
-                                .background(F1Red, RoundedCornerShape(3.dp))
+                                .background(AccentColor, RoundedCornerShape(3.dp))
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Text(
                             text = stringResource(R.string.header_title),
-                            color = F1White,
+                            color = TextWhite,
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
@@ -152,7 +152,7 @@ fun F1TVManagerScreen(
                     val abi = android.os.Build.SUPPORTED_ABIS.firstOrNull() ?: "arm"
                     Text(
                         text = stringResource(R.string.header_subtitle, manufacturer, model, product, abi),
-                        color = F1Gray,
+                        color = TextGray,
                         fontSize = 16.sp
                     )
                 }
@@ -165,7 +165,7 @@ fun F1TVManagerScreen(
                     // Bilgi Butonu
                     TvActionButton(
                         text = stringResource(R.string.btn_info),
-                        backgroundColor = F1DarkCard,
+                        backgroundColor = CardDark,
                         focusedBorderColor = Color(0xFF64B5F6),
                         onClick = { showInfoDialog = true }
                     )
@@ -173,7 +173,7 @@ fun F1TVManagerScreen(
                     // Dil Butonu (EN / TR / RO)
                     TvActionButton(
                         text = stringResource(R.string.btn_language, currentLanguage.uppercase(Locale.ROOT)),
-                        backgroundColor = F1DarkCard,
+                        backgroundColor = CardDark,
                         focusedBorderColor = Color(0xFF00ADB5),
                         onClick = onToggleLanguage
                     )
@@ -181,8 +181,8 @@ fun F1TVManagerScreen(
                     // F1 TV Başlat Butonu
                     TvActionButton(
                         text = if (uiState.isInstalled) stringResource(R.string.btn_launch_f1) else stringResource(R.string.btn_not_installed),
-                        backgroundColor = F1DarkCard,
-                        focusedBorderColor = F1White,
+                        backgroundColor = CardDark,
+                        focusedBorderColor = TextWhite,
                         enabled = uiState.isInstalled,
                         onClick = { viewModel.launchF1TV() }
                     )
@@ -197,7 +197,7 @@ fun F1TVManagerScreen(
                 InfoCard(
                     title = stringResource(R.string.card_installed_version),
                     value = if (uiState.isInstalled) uiState.installedVersion else stringResource(R.string.btn_not_installed),
-                    valueColor = if (uiState.isInstalled) F1White else Color(0xFFFF9800),
+                    valueColor = if (uiState.isInstalled) TextWhite else Color(0xFFFF9800),
                     modifier = Modifier.weight(1f)
                 )
 
@@ -208,9 +208,9 @@ fun F1TVManagerScreen(
                 )
 
                 val statusColor = when {
-                    uiState.isSignatureConflict -> F1Red
+                    uiState.isSignatureConflict -> Color(0xFFE53935)
                     !uiState.isInstalled -> Color(0xFFFF9800)
-                    uiState.isUpdateAvailable -> F1Red
+                    uiState.isUpdateAvailable -> AccentColor
                     else -> Color(0xFF4CAF50)
                 }
 
@@ -239,13 +239,13 @@ fun F1TVManagerScreen(
                             .fillMaxWidth()
                             .height(8.dp)
                             .clip(RoundedCornerShape(4.dp)),
-                        color = F1Red,
-                        trackColor = F1DarkCard
+                        color = AccentColor,
+                        trackColor = CardDark
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = stringResource(R.string.status_downloading, uiState.downloadProgress),
-                        color = F1Gray,
+                        color = TextGray,
                         fontSize = 14.sp
                     )
                 }
@@ -264,7 +264,7 @@ fun F1TVManagerScreen(
             ) {
                 TvActionButton(
                     text = if (uiState.isLoading) stringResource(R.string.status_checking) else stringResource(R.string.btn_check_updates),
-                    backgroundColor = F1DarkCard,
+                    backgroundColor = CardDark,
                     focusedBorderColor = Color(0xFFE0E0E0),
                     enabled = !uiState.isLoading && !uiState.isDownloading,
                     isLoading = uiState.isLoading,
@@ -275,7 +275,7 @@ fun F1TVManagerScreen(
                     // Farklı imza anahtarıyla kurulu F1 TV önce kaldırılmalı
                     TvActionButton(
                         text = stringResource(R.string.btn_uninstall_f1),
-                        backgroundColor = F1Red,
+                        backgroundColor = AccentColor,
                         focusedBorderColor = Color(0xFFFFD700),
                         onClick = { viewModel.uninstallF1TV() }
                     )
@@ -289,7 +289,7 @@ fun F1TVManagerScreen(
 
                     TvActionButton(
                         text = buttonText,
-                        backgroundColor = F1Red,
+                        backgroundColor = AccentColor,
                         focusedBorderColor = Color(0xFFFFD700),
                         enabled = !uiState.isDownloading && uiState.downloadUrl.isNotEmpty(),
                         isLoading = uiState.isDownloading,
@@ -299,7 +299,7 @@ fun F1TVManagerScreen(
                     if (uiState.isDownloading) {
                         TvActionButton(
                             text = stringResource(R.string.btn_cancel_download),
-                            backgroundColor = F1DarkCard,
+                            backgroundColor = CardDark,
                             focusedBorderColor = Color(0xFFE0E0E0),
                             modifier = Modifier.focusRequester(cancelFocusRequester),
                             onClick = { viewModel.cancelDownload() }
@@ -324,7 +324,7 @@ fun F1TVManagerScreen(
                         .width(540.dp)
                         .wrapContentHeight(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = F1DarkCard)
+                    colors = CardDefaults.cardColors(containerColor = CardDark)
                 ) {
                     Column(
                         modifier = Modifier.padding(32.dp),
@@ -336,14 +336,14 @@ fun F1TVManagerScreen(
                                 modifier = Modifier
                                     .width(5.dp)
                                     .height(24.dp)
-                                    .background(F1Red, RoundedCornerShape(2.5.dp))
+                                    .background(AccentColor, RoundedCornerShape(2.5.dp))
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = stringResource(R.string.dialog_about_title),
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = F1White
+                                color = TextWhite
                             )
                         }
 
@@ -353,13 +353,13 @@ fun F1TVManagerScreen(
                                 text = stringResource(R.string.dialog_developer_label),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = F1Gray
+                                color = TextGray
                             )
                             Text(
                                 text = stringResource(R.string.dialog_developer_name),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = F1White
+                                color = TextWhite
                             )
                         }
 
@@ -369,7 +369,7 @@ fun F1TVManagerScreen(
                                 text = stringResource(R.string.dialog_website_label),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = F1Gray
+                                color = TextGray
                             )
                             Text(
                                 text = stringResource(R.string.dialog_website_url),
@@ -385,13 +385,13 @@ fun F1TVManagerScreen(
                                 text = stringResource(R.string.dialog_patch_label),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = F1Gray
+                                color = TextGray
                             )
                             Text(
                                 text = stringResource(R.string.dialog_patch_author),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = F1White
+                                color = TextWhite
                             )
                         }
 
@@ -401,7 +401,7 @@ fun F1TVManagerScreen(
                                 text = stringResource(R.string.dialog_device_label),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = F1Gray
+                                color = TextGray
                             )
                             val manufacturer = android.os.Build.MANUFACTURER.replaceFirstChar { it.uppercase() }
                             val model = android.os.Build.MODEL
@@ -411,7 +411,7 @@ fun F1TVManagerScreen(
                                 text = stringResource(R.string.header_subtitle, manufacturer, model, product, abi),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = F1White
+                                color = TextWhite
                             )
                         }
 
@@ -420,7 +420,7 @@ fun F1TVManagerScreen(
                             text = stringResource(R.string.dialog_disclaimer),
                             fontSize = 11.sp,
                             lineHeight = 15.sp,
-                            color = F1Gray
+                            color = TextGray
                         )
 
                         Spacer(modifier = Modifier.height(4.dp))
@@ -432,7 +432,7 @@ fun F1TVManagerScreen(
                         ) {
                             TvActionButton(
                                 text = stringResource(R.string.btn_close),
-                                backgroundColor = F1Red,
+                                backgroundColor = AccentColor,
                                 focusedBorderColor = Color(0xFFFFD700),
                                 modifier = Modifier.focusRequester(closeFocusRequester),
                                 onClick = { showInfoDialog = false }
@@ -450,13 +450,13 @@ fun InfoCard(
     title: String,
     value: String,
     modifier: Modifier = Modifier,
-    valueColor: Color = F1White,
+    valueColor: Color = TextWhite,
     isLoading: Boolean = false
 ) {
     Card(
         modifier = modifier.height(140.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = F1DarkCard)
+        colors = CardDefaults.cardColors(containerColor = CardDark)
     ) {
         Column(
             modifier = Modifier
@@ -466,7 +466,7 @@ fun InfoCard(
         ) {
             Text(
                 text = title,
-                color = F1Gray,
+                color = TextGray,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 letterSpacing = 1.sp
@@ -478,7 +478,7 @@ fun InfoCard(
                 if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
-                        color = F1Red,
+                        color = AccentColor,
                         strokeWidth = 2.5.dp
                     )
                 }
@@ -515,9 +515,9 @@ fun TvActionButton(
         shape = RoundedCornerShape(8.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isFocused) focusedBorderColor else backgroundColor,
-            contentColor = if (isFocused) F1Dark else F1White,
+            contentColor = if (isFocused) BackgroundDark else TextWhite,
             disabledContainerColor = backgroundColor.copy(alpha = 0.6f),
-            disabledContentColor = F1White.copy(alpha = 0.6f)
+            disabledContentColor = TextWhite.copy(alpha = 0.6f)
         ),
         modifier = modifier
             .height(52.dp)
@@ -533,7 +533,7 @@ fun TvActionButton(
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(18.dp),
-                    color = if (isFocused) F1Dark else F1White,
+                    color = if (isFocused) BackgroundDark else TextWhite,
                     strokeWidth = 2.5.dp
                 )
                 Spacer(modifier = Modifier.width(10.dp))

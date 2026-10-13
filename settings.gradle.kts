@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "F1TVManager"
+rootProject.name = "PitwallUpdater"
 include(":app")

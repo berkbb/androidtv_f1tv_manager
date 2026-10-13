@@ -1,6 +1,6 @@
 # Development Guide
 
-This guide details the architectural decisions, project structure, developer workflows, and debugging procedures for the **F1 TV Manager for Android TV & Google TV (Android 8.0+)**.
+This guide details the architectural decisions, project structure, developer workflows, and debugging procedures for the **Pitwall Updater for Android TV & Google TV (Android 8.0+)**.
 
 ---
 
@@ -10,12 +10,12 @@ The application follows Modern Android Architecture principles:
 
 - **Presentation Layer:** Jetpack Compose (BOM `2026.09.00`) + Material 3.
 - **Build:** AGP 9.4.1 with built-in Kotlin (KGP 2.2.10; only the Compose compiler plugin is applied), Gradle 9.7.1, compileSdk 37.2 (`compileSdk { version = release(37) { minorApiLevel = 2 } }`), targetSdk 35, R8 minification + resource shrinking for release.
-- **APK naming:** `base.archivesName = "f1tv-manager-v<version>"` produces `f1tv-manager-v<version>-release.apk` (AGP 9 removed the legacy `applicationVariants` API).
+- **APK naming:** `base.archivesName = "pitwall-updater-v<version>"` produces `pitwall-updater-v<version>-release.apk` (AGP 9 removed the legacy `applicationVariants` API).
 - **State Management:** MVVM pattern using Kotlin Coroutines and `StateFlow`.
 - **System Integration:** Android `PackageInstaller` Session API via `PackageInstallerHelper`.
 
 ```
-com.berkbb.f1tv.manager/
+com.berkbb.pitwall/
 ├── MainActivity.kt               # Compose UI entry point, D-Pad focus & locale provider
 ├── LocaleHelper.kt               # Dynamic locale resolver & cycling helper (EN, TR, RO)
 ├── UpdaterViewModel.kt           # StateFlow UI state, GitHub API client, verified streaming download
@@ -30,7 +30,7 @@ com.berkbb.f1tv.manager/
 - Implements a reactive `CompositionLocalProvider` wrapping `LocalConfiguration` and `LocalContext` created with `createConfigurationContext()`. This enables instantaneous switching between English, Turkish, and Romanian without restarting the process.
 - Implements `TvActionButton` with `MutableInteractionSource` and `collectIsFocusedAsState()` to render TV D-pad focus states:
   - Default Check Button: Platinum/White outline on focus (`#E0E0E0`).
-  - Action / Update Button: F1 Red default with Championship Gold outline on focus (`#FFD700`).
+  - Action / Update Button: Violet accent (`#7C4DFF`) default with Championship Gold outline on focus (`#FFD700`).
   - Language Toggle: Cyan focus ring (`#00ADB5`).
 - `TvActionButton` relies on the `Button`'s own focus target (no extra `.focusable()`), so each button is a single D-pad stop.
 - The About dialog is a Compose `Dialog` window: D-pad focus is trapped inside it and Back dismisses it.
@@ -124,7 +124,7 @@ adb devices
 ```bash
 # Assemble Release APK
 ./gradlew assemble
-adb install -r app/build/outputs/apk/release/f1tv-manager-v1.0.2-release.apk
+adb install -r app/build/outputs/apk/release/pitwall-updater-v1.0.2-release.apk
 ```
 
 ### 4. Remote Inspection & Headless Testing

@@ -4,15 +4,16 @@
     android:viewportWidth="320"
     android:viewportHeight="180">
     <path
-        android:fillColor="#15151E"
+        android:fillColor="#111318"
         android:pathData="M0,0h320v180h-320z" />
     <path
-        android:fillColor="#E10600"
+        android:fillColor="#7C4DFF"
         android:pathData="M0,174h320v6h-320z" />
+    <!-- Generic download/update glyph: arrow into a tray -->
     <path
-        android:fillColor="#E10600"
-        android:pathData="M110,65 L175,65 C190,65 200,75 200,90 C200,105 190,115 175,115 L140,115 L140,95 L170,95 C173,95 176,92 176,90 C176,88 173,85 170,85 L110,85 Z" />
+        android:fillColor="#7C4DFF"
+        android:pathData="M150,40 L170,40 L170,88 L188,88 L160,118 L132,88 L150,88 Z" />
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M125,50 L145,50 L145,130 L125,130 Z" />
+        android:pathData="M115,110 L127,110 L127,128 L193,128 L193,110 L205,110 L205,140 L115,140 Z" />
 </vector>

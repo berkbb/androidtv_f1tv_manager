@@ -1,16 +1,17 @@
-# F1 TV Manager for Android TV & Google TV
+# Pitwall Updater for Android TV & Google TV
 
-A lightweight, dedicated Android TV companion and update manager built with **Kotlin** and **Jetpack Compose** designed for Android TV and Google TV devices running **Android 8.0 (API 26) or higher** (including Philips, Sony, TCL, Xiaomi, Chromecast, etc.).
+**Pitwall Updater** is an unofficial, independent, open-source updater for the F1 TV app on Android TV and Google TV devices running **Android 8.0 (API 26) or higher** (including Philips, Sony, TCL, Xiaomi, Chromecast, etc.). It is built with **Kotlin** and **Jetpack Compose**.
+
+> [!IMPORTANT]
+> Pitwall Updater is not affiliated with, endorsed by, or sponsored by Formula One Licensing B.V. or Formula 1. "F1 TV" is used only to identify the app this tool works with. See [TRADEMARKS.md](TRADEMARKS.md).
 
 ---
 
 ## 🏎️ Background & Motivation
 
-Official distribution of the **F1 TV** Android TV application via the Google Play Store restricts availability based on device hardware whitelists. Even though capable 4K Ultra HD smart TVs (such as Philips `49PUS7503/62` on the `TPM171E` chassis, Sony Bravia, TCL, etc.) run official Android TV (Android 8.0 Oreo+), F1 Digital Media does not whitelist many TV models.
+Many capable Android TV sets (for example Philips `49PUS7503/62` on the `TPM171E` chassis) are not offered the F1 TV app in the Google Play Store. Community builds of the app are published as multi-part App Bundles (`.apkm`: `base.apk` + architecture, language and density splits), which most sideloading tools cannot install directly on a TV.
 
-Furthermore, official updates are distributed as multi-part Android App Bundles / Split APKMs (`base.apk` + architecture-specific splits like `config.armeabi_v7a.apk` + language/density splits). Traditional sideloading utilities often fail on split APKs or enforce restrictive third-party app store overhead.
-
-**F1 TV Manager** solves this directly on the TV by automatically downloading, extracting, and streaming the latest 4K/UHD patched releases ([Alexvbp/f1tv-4k-patch](https://github.com/Alexvbp/f1tv-4k-patch)) via Android's native `PackageInstaller` Session API.
+Pitwall Updater handles this on the TV itself. It tracks the community 4K/UHD build published at [Alexvbp/f1tv-4k-patch](https://github.com/Alexvbp/f1tv-4k-patch), downloads and verifies it, and installs the required splits through Android's native `PackageInstaller` Session API. This project does not host, modify, or redistribute any F1 TV binaries.
 
 ---
 
@@ -18,7 +19,7 @@ Furthermore, official updates are distributed as multi-part Android App Bundles 
 
 - **Direct GitHub Release Tracking:** Queries the GitHub Releases API for the newest *stable* Alexvbp 4K/UHD release (pre-release / device-specific variants such as `-dev` or `-shield-…` are skipped) and compares it numerically against the installed package (`com.formulaone.production`).
 - **Verified, Version-Bound Downloads:** Each `.apkm` is cached under its release tag, downloaded to a temporary `.part` file, and only accepted after its SHA-256 matches the digest published by GitHub (exact size check as fallback). A new release never reuses an older cached package.
-- **Signing-Key Conflict Guidance:** If an official (Play Store) F1 TV build is installed, Android rejects the patched build (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`). The manager detects this and offers a one-click *Uninstall Current F1 TV* action before reinstalling.
+- **Signing-Key Conflict Guidance:** If an official (Play Store) F1 TV build is installed, Android rejects the community build (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`). The updater detects this and offers a one-click *Uninstall Current F1 TV* action before reinstalling.
 - **Dynamic ABI & Architecture Detection:** Inspects TV processor architecture at runtime (`Build.SUPPORTED_ABIS`). Selects the best device ABI that the bundle actually ships — 64-bit (`arm64-v8a`) when available, 32-bit (`armeabi-v7a`) otherwise — and reports an incompatibility instead of installing a package without native libraries.
 - **Native Split APK Streaming:** Extracts `.apkm` ZIP archives in cache and streams the exact required split APKs directly into Android's native `PackageInstaller.Session`. No root required; uses standard TV user-confirmation prompts.
 - **Storage Pre-Check & Cancellable Downloads:** Verifies there is enough free space for the download plus the installer's staging copy before starting, and the download can be cancelled at any time from the remote (partial files are removed).
@@ -86,7 +87,7 @@ Ensure a JDK (17–21) and the Android SDK are installed, then run the following
 
 ### 🛠️ Method 2: Android Studio
 
-1. Open Android Studio and select **Open**, targeting the repository root (`androidtv_f1tv_manager`).
+1. Open Android Studio and select **Open**, targeting the repository root.
 2. Wait for Gradle synchronization to finish.
 3. From the top menu bar, select **Build > Build Bundle(s) / APK(s) > Build APK(s)**.
 
@@ -97,34 +98,34 @@ Ensure a JDK (17–21) and the Android SDK are installed, then run the following
 Release builds are signed with a dedicated keystore when one is configured, so APKs built on different machines can update each other. Create a git-ignored `keystore.properties` in the repository root:
 
 ```properties
-storeFile=/path/to/f1tv-manager-release.jks
+storeFile=/path/to/pitwall-release.jks
 storePassword=…
-keyAlias=f1tv-manager
+keyAlias=pitwall
 keyPassword=…
 ```
 
-Alternatively set the `F1TV_KEYSTORE_FILE`, `F1TV_KEYSTORE_PASSWORD`, `F1TV_KEY_ALIAS`, and `F1TV_KEY_PASSWORD` environment variables. Without either, the build falls back to the local debug key and prints a warning.
+Alternatively set the `PITWALL_KEYSTORE_FILE`, `PITWALL_KEYSTORE_PASSWORD`, `PITWALL_KEY_ALIAS`, and `PITWALL_KEY_PASSWORD` environment variables. Without either, the build falls back to the local debug key and prints a warning.
 
 ---
 
 ### 📍 Compiled APK Location
 
 Upon build completion, the generated release APK file is located at:
-- **Release APK:** `app/build/outputs/apk/release/f1tv-manager-v1.0.2-release.apk`
+- **Release APK:** `app/build/outputs/apk/release/pitwall-updater-v1.0.2-release.apk`
 
 ---
 
 ## ⚙️ Permissions & TV Installation Guide
 
 ### 📺 Daily Usage & In-App Updates
-* **No Developer Options Required:** Once the manager app is installed, regular F1 TV updates do not require TV Developer Options to remain enabled.
+* **No Developer Options Required:** Once Pitwall Updater is installed, regular F1 TV updates do not require TV Developer Options to remain enabled.
 * **Install Unknown Apps Permission:** Only the standard Android *"Install unknown apps"* (`REQUEST_INSTALL_PACKAGES`) permission is needed. The application automatically redirects you to this system setting upon initial run.
 * **Uninstall Prompt:** `REQUEST_DELETE_PACKAGES` is declared solely to open the system uninstall confirmation for a conflicting official F1 TV build; nothing is removed without your confirmation.
 
 ### 📦 Initial TV Installation Methods
 
 #### 🔹 Method 1: USB Flash Drive or File Manager (No Developer Mode Required - Easy)
-1. Copy `f1tv-manager-v1.0.2-release.apk` to a USB flash drive or transfer via **Send Files to TV** / **X-plore**.
+1. Copy `pitwall-updater-v1.0.2-release.apk` to a USB flash drive or transfer via **Send Files to TV** / **X-plore**.
 2. Open the file manager on your TV and install the APK.
 
 #### 🔹 Method 2: Network ADB Sideloading (Requires TV Developer Options)
@@ -134,7 +135,7 @@ Upon build completion, the generated release APK file is located at:
 
 ```bash
 adb connect [TV_IP_ADDRESS]:5555
-adb install -r app/build/outputs/apk/release/f1tv-manager-v1.0.2-release.apk
+adb install -r app/build/outputs/apk/release/pitwall-updater-v1.0.2-release.apk
 ```
 
 ---
