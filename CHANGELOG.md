@@ -9,10 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [1.0.3] - 2026-10-14
+
 ### Changed
 - **Renamed to Pitwall Updater:** The app is now called *Pitwall Updater* in all locales, so the Formula 1 / F1 TV trademarks are used only to describe compatibility. The application ID and Kotlin package moved from `com.berkbb.f1tv.manager` to `com.berkbb.pitwall` (it installs as a new app next to the old one), the Gradle root project is `PitwallUpdater`, the APK is `pitwall-updater-v<version>-release.apk`, and the signing environment variables are `PITWALL_*`.
 - **Neutral Visual Identity:** Replaced the F1-style banner and red/dark palette with a generic update icon and a violet accent (`#7C4DFF`).
 - **Documentation:** Reworded the README to describe the project as an unofficial updater and added a prominent non-affiliation notice.
+
+### Added
+- **Opt-In Per-ABI Splits:** Introduced `-Ppitwall.abiSplits=true` build flag generating architecture-specific release APKs (`arm64-v8a`, `armeabi-v7a`, `x86_64`) alongside the universal release APK.
+- **Automated Release Packager:** Created `package.sh` and macOS Finder launcher `package.command` to execute tests, build both split APKs and the Android App Bundle (`.aab`), copy them to `dist/`, and generate a `SHA256SUMS` verification manifest.
 
 ---
 
