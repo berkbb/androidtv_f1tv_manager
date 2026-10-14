@@ -68,7 +68,18 @@ android {
         }
     }
 
-    // APK-only distribution: keep all language resources in the base APK if an AAB is ever built
+    // Per-ABI APKs (x86_64, armeabi-v7a, arm64-v8a) plus a universal APK, opt-in via -Ppitwall.abiSplits=true.
+    // AGP 9 refuses ABI splits together with bundleRelease (issuetracker 402800800), so AAB builds leave it off.
+    splits {
+        abi {
+            isEnable = providers.gradleProperty("pitwall.abiSplits").orNull.toBoolean()
+            reset()
+            include("x86_64", "armeabi-v7a", "arm64-v8a")
+            isUniversalApk = true
+        }
+    }
+
+    // Keep all language resources in the base APK of the AAB (TVs sideload, no Play language splits)
     bundle {
         language {
             enableSplit = false
