@@ -113,6 +113,20 @@ Alternatively set the `PITWALL_KEYSTORE_FILE`, `PITWALL_KEYSTORE_PASSWORD`, `PIT
 Upon build completion, the generated release APK file is located at:
 - **Release APK:** `app/build/outputs/apk/release/pitwall-updater-v1.0.2-release.apk`
 
+### 📦 Release Packaging Script
+
+`./package.sh` (or double-click `package.command` in macOS Finder) runs the unit tests and writes every release artifact to `dist/` together with a `SHA256SUMS` file:
+
+| File | Target |
+| :--- | :--- |
+| `pitwall-updater-v<version>-universal-release.apk` | All architectures |
+| `pitwall-updater-v<version>-arm64-v8a-release.apk` | 64-bit ARM TVs |
+| `pitwall-updater-v<version>-armeabi-v7a-release.apk` | 32-bit ARM TVs |
+| `pitwall-updater-v<version>-x86_64-release.apk` | x86_64 devices / emulators |
+| `pitwall-updater-v<version>-release.aab` | Android App Bundle |
+
+Per-ABI APKs are opt-in through `-Ppitwall.abiSplits=true`; AGP 9 cannot combine ABI splits with an App Bundle build, so the script builds APKs and the AAB in separate Gradle runs.
+
 ---
 
 ## ⚙️ Permissions & TV Installation Guide
