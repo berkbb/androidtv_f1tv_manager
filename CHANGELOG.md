@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.4] - 2026-10-17
+
+### Changed
+- **Full-screen About window:** the Info button opens a full-screen window like AynaCast's, with the accent-bar title, a close button in the top-right corner and Close at the bottom; developer, website, patch and device details are shown as cards.
+
+---
+
 ## [1.0.3] - 2026-10-14
 
 ### Changed

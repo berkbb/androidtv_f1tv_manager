@@ -8,6 +8,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
@@ -23,7 +27,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -310,138 +317,144 @@ fun PitwallScreen(
         }
 
         if (showInfoDialog) {
-            // Ayrı pencere: D-pad odağı diyalog içinde kalır, arkadaki butonlara geçemez; Geri tuşu kapatır
-            val closeFocusRequester = remember { FocusRequester() }
-            Dialog(
-                onDismissRequest = { showInfoDialog = false },
-                properties = DialogProperties(usePlatformDefaultWidth = false)
-            ) {
-                LaunchedEffect(Unit) {
-                    runCatching { closeFocusRequester.requestFocus() }
-                }
-                Card(
+            AboutWindow(onClose = { showInfoDialog = false })
+        }
+    }
+}
+
+/**
+ * Full-screen About window, as in AynaCast: title with the accent bar, a close button in the
+ * top-right corner and another at the bottom. A separate window keeps D-pad focus inside it, and
+ * Back closes it.
+ */
+@Composable
+fun AboutWindow(onClose: () -> Unit) {
+    val closeFocusRequester = remember { FocusRequester() }
+    Dialog(
+        onDismissRequest = onClose,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        LaunchedEffect(Unit) {
+            runCatching { closeFocusRequester.requestFocus() }
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundDark)
+                .padding(48.dp)
+        ) {
+            // Title bar
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
                     modifier = Modifier
-                        .width(540.dp)
-                        .wrapContentHeight(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardDark)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(32.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        // Title
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .width(5.dp)
-                                    .height(24.dp)
-                                    .background(AccentColor, RoundedCornerShape(2.5.dp))
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = stringResource(R.string.dialog_about_title),
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TextWhite
-                            )
-                        }
+                        .width(6.dp)
+                        .height(32.dp)
+                        .background(AccentColor, RoundedCornerShape(3.dp))
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = stringResource(R.string.dialog_about_title),
+                    color = TextWhite,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                CloseIconButton(
+                    contentDescription = stringResource(R.string.btn_close),
+                    onClick = onClose
+                )
+            }
 
-                        // Developer
-                        Column {
-                            Text(
-                                text = stringResource(R.string.dialog_developer_label),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = TextGray
-                            )
-                            Text(
-                                text = stringResource(R.string.dialog_developer_name),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TextWhite
-                            )
-                        }
+            Spacer(modifier = Modifier.height(24.dp))
 
-                        // Website
-                        Column {
-                            Text(
-                                text = stringResource(R.string.dialog_website_label),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = TextGray
-                            )
-                            Text(
-                                text = stringResource(R.string.dialog_website_url),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF64B5F6)
-                            )
-                        }
-
-                        // Patch Author
-                        Column {
-                            Text(
-                                text = stringResource(R.string.dialog_patch_label),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = TextGray
-                            )
-                            Text(
-                                text = stringResource(R.string.dialog_patch_author),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = TextWhite
-                            )
-                        }
-
-                        // Device & Platform
-                        Column {
-                            Text(
-                                text = stringResource(R.string.dialog_device_label),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = TextGray
-                            )
-                            val manufacturer = android.os.Build.MANUFACTURER.replaceFirstChar { it.uppercase() }
-                            val model = android.os.Build.MODEL
-                            val product = android.os.Build.PRODUCT
-                            val abi = android.os.Build.SUPPORTED_ABIS.firstOrNull() ?: "arm"
-                            Text(
-                                text = stringResource(R.string.header_subtitle, manufacturer, model, product, abi),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = TextWhite
-                            )
-                        }
-
-                        // Disclaimer / Legal Note
-                        Text(
-                            text = stringResource(R.string.dialog_disclaimer),
-                            fontSize = 11.sp,
-                            lineHeight = 15.sp,
-                            color = TextGray
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        // Close button
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.CenterEnd
-                        ) {
-                            TvActionButton(
-                                text = stringResource(R.string.btn_close),
-                                backgroundColor = AccentColor,
-                                focusedBorderColor = Color(0xFFFFD700),
-                                modifier = Modifier.focusRequester(closeFocusRequester),
-                                onClick = { showInfoDialog = false }
-                            )
-                        }
-                    }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    InfoCard(
+                        title = stringResource(R.string.dialog_developer_label).trimEnd(':'),
+                        value = stringResource(R.string.dialog_developer_name),
+                        height = 112.dp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    InfoCard(
+                        title = stringResource(R.string.dialog_website_label).trimEnd(':'),
+                        value = stringResource(R.string.dialog_website_url),
+                        valueColor = Color(0xFF64B5F6),
+                        height = 112.dp,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    InfoCard(
+                        title = stringResource(R.string.dialog_patch_label).trimEnd(':'),
+                        value = stringResource(R.string.dialog_patch_author),
+                        height = 112.dp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    val manufacturer = android.os.Build.MANUFACTURER.replaceFirstChar { it.uppercase() }
+                    val model = android.os.Build.MODEL
+                    val product = android.os.Build.PRODUCT
+                    val abi = android.os.Build.SUPPORTED_ABIS.firstOrNull() ?: "arm"
+                    InfoCard(
+                        title = stringResource(R.string.dialog_device_label).trimEnd(':'),
+                        value = stringResource(R.string.header_subtitle, manufacturer, model, product, abi),
+                        height = 112.dp,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Disclaimer beside the Close button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(32.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.dialog_disclaimer),
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
+                    color = TextGray,
+                    modifier = Modifier.weight(1f)
+                )
+                TvActionButton(
+                    text = stringResource(R.string.btn_close),
+                    backgroundColor = AccentColor,
+                    focusedBorderColor = Color(0xFFFFD700),
+                    modifier = Modifier.focusRequester(closeFocusRequester),
+                    onClick = onClose
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun CloseIconButton(contentDescription: String, onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    Box(
+        modifier = Modifier
+            .size(52.dp)
+            .clip(CircleShape)
+            .background(if (isFocused) Color(0xFFE0E0E0) else CardDark)
+            .semantics { this.contentDescription = contentDescription }
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "✕",
+            color = if (isFocused) BackgroundDark else TextWhite,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
@@ -451,10 +464,11 @@ fun InfoCard(
     value: String,
     modifier: Modifier = Modifier,
     valueColor: Color = TextWhite,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    height: Dp = 140.dp
 ) {
     Card(
-        modifier = modifier.height(140.dp),
+        modifier = modifier.height(height),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = CardDark)
     ) {

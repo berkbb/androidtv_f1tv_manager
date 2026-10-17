@@ -111,7 +111,7 @@ Alternatively set the `PITWALL_KEYSTORE_FILE`, `PITWALL_KEYSTORE_PASSWORD`, `PIT
 ### 📍 Compiled APK Location
 
 Upon build completion, the generated release APK file is located at:
-- **Release APK:** `app/build/outputs/apk/release/pitwall-updater-v1.0.3-release.apk`
+- **Release APK:** `app/build/outputs/apk/release/pitwall-updater-v1.0.4-release.apk`
 
 ### 📦 Release Packaging Script
 
@@ -139,7 +139,7 @@ Per-ABI APKs are opt-in through `-Ppitwall.abiSplits=true`; AGP 9 cannot combine
 ### 📦 Initial TV Installation Methods
 
 #### 🔹 Method 1: USB Flash Drive or File Manager (No Developer Mode Required - Easy)
-1. Copy `pitwall-updater-v1.0.3-release.apk` to a USB flash drive or transfer via **Send Files to TV** / **X-plore**.
+1. Copy `pitwall-updater-v1.0.4-release.apk` to a USB flash drive or transfer via **Send Files to TV** / **X-plore**.
 2. Open the file manager on your TV and install the APK.
 
 #### 🔹 Method 2: Network ADB Sideloading (Requires TV Developer Options)
@@ -149,7 +149,7 @@ Per-ABI APKs are opt-in through `-Ppitwall.abiSplits=true`; AGP 9 cannot combine
 
 ```bash
 adb connect [TV_IP_ADDRESS]:5555
-adb install -r app/build/outputs/apk/release/pitwall-updater-v1.0.3-release.apk
+adb install -r app/build/outputs/apk/release/pitwall-updater-v1.0.4-release.apk
 ```
 
 ---

@@ -124,7 +124,7 @@ adb devices
 ```bash
 # Assemble Release APK
 ./gradlew assemble
-adb install -r app/build/outputs/apk/release/pitwall-updater-v1.0.3-release.apk
+adb install -r app/build/outputs/apk/release/pitwall-updater-v1.0.4-release.apk
 ```
 
 ### 4. Remote Inspection & Headless Testing
